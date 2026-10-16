@@ -1,0 +1,916 @@
+{
+  "IND_SP.POP.TOTL_2022_2023": {
+    "country": {
+      "code": "IND",
+      "name": "India"
+    },
+    "indicator": {
+      "code": "SP.POP.TOTL",
+      "name": "Total Population",
+      "unit": "People"
+    },
+    "meta": {
+      "source": "World Development Indicators",
+      "source_id": "2",
+      "last_updated": "2024-03-28",
+      "total_observations": 2,
+      "valid_observations": 2,
+      "missing_observations": 0,
+      "fetched_at": "2026-10-15T12:00:00Z",
+      "from_cache": true
+    },
+    "analytics": {
+      "latest_value": 1400000000.0,
+      "latest_year": 2023,
+      "oldest_value": 1380000000.0,
+      "oldest_year": 2022,
+      "min_value": 1380000000.0,
+      "max_value": 1400000000.0,
+      "avg_value": 1390000000.0,
+      "overall_change_pct": 1.45
+    },
+    "observations": [
+      {
+        "year": 2022,
+        "value": 1380000000.0,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "SP.POP.TOTL",
+        "indicator_name": "Total Population",
+        "unit": "People",
+        "source": "World Bank Indicators API",
+        "last_updated": "2024-03-28"
+      },
+      {
+        "year": 2023,
+        "value": 1400000000.0,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "SP.POP.TOTL",
+        "indicator_name": "Total Population",
+        "unit": "People",
+        "source": "World Bank Indicators API",
+        "last_updated": "2024-03-28"
+      }
+    ]
+  },
+  "IND_NY.GDP.MKTP.CD_2020_2023": {
+    "country": {
+      "code": "IND",
+      "name": "India"
+    },
+    "indicator": {
+      "code": "NY.GDP.MKTP.CD",
+      "name": "GDP (Current US$)",
+      "category": "Economy",
+      "unit": "USD ($)",
+      "description": "Gross Domestic Product at purchaser's prices, in current U.S. dollars."
+    },
+    "meta": {
+      "source": "World Development Indicators (WDI)",
+      "source_id": "2",
+      "last_updated": "2026-10-08",
+      "total_observations": 4,
+      "valid_observations": 4,
+      "missing_observations": 0,
+      "fetched_at": "2026-10-15T08:50:27Z",
+      "from_cache": false
+    },
+    "analytics": {
+      "latest_value": 3500906030644.76,
+      "latest_year": 2023,
+      "oldest_value": 2674851578587.27,
+      "oldest_year": 2020,
+      "min_value": 2674851578587.27,
+      "max_value": 3500906030644.76,
+      "avg_value": 3148241681126.4927,
+      "overall_change_pct": 30.88
+    },
+    "observations": [
+      {
+        "year": 2020,
+        "value": 2674851578587.27,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2021,
+        "value": 3167270623260.47,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2022,
+        "value": 3249938492013.47,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2023,
+        "value": 3500906030644.76,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      }
+    ]
+  },
+  "USA_NY.GDP.MKTP.CD_2020_2023": {
+    "country": {
+      "code": "USA",
+      "name": "United States"
+    },
+    "indicator": {
+      "code": "NY.GDP.MKTP.CD",
+      "name": "GDP (Current US$)",
+      "category": "Economy",
+      "unit": "USD ($)",
+      "description": "Gross Domestic Product at purchaser's prices, in current U.S. dollars."
+    },
+    "meta": {
+      "source": "World Development Indicators (WDI)",
+      "source_id": "2",
+      "last_updated": "2026-10-08",
+      "total_observations": 4,
+      "valid_observations": 4,
+      "missing_observations": 0,
+      "fetched_at": "2026-10-15T08:50:28Z",
+      "from_cache": false
+    },
+    "analytics": {
+      "latest_value": 27811517000000.0,
+      "latest_year": 2023,
+      "oldest_value": 21375281000000.0,
+      "oldest_year": 2020,
+      "min_value": 21375281000000.0,
+      "max_value": 27811517000000.0,
+      "avg_value": 24741764250000.0,
+      "overall_change_pct": 30.11
+    },
+    "observations": [
+      {
+        "year": 2020,
+        "value": 21375281000000.0,
+        "is_missing": false,
+        "country_code": "USA",
+        "country_name": "United States",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2021,
+        "value": 23725645000000.0,
+        "is_missing": false,
+        "country_code": "USA",
+        "country_name": "United States",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2022,
+        "value": 26054614000000.0,
+        "is_missing": false,
+        "country_code": "USA",
+        "country_name": "United States",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2023,
+        "value": 27811517000000.0,
+        "is_missing": false,
+        "country_code": "USA",
+        "country_name": "United States",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      }
+    ]
+  },
+  "CHN_NY.GDP.MKTP.CD_2020_2023": {
+    "country": {
+      "code": "CHN",
+      "name": "China"
+    },
+    "indicator": {
+      "code": "NY.GDP.MKTP.CD",
+      "name": "GDP (Current US$)",
+      "category": "Economy",
+      "unit": "USD ($)",
+      "description": "Gross Domestic Product at purchaser's prices, in current U.S. dollars."
+    },
+    "meta": {
+      "source": "World Development Indicators (WDI)",
+      "source_id": "2",
+      "last_updated": "2026-10-08",
+      "total_observations": 4,
+      "valid_observations": 4,
+      "missing_observations": 0,
+      "fetched_at": "2026-10-15T08:50:29Z",
+      "from_cache": false
+    },
+    "analytics": {
+      "latest_value": 18270356654533.2,
+      "latest_year": 2023,
+      "oldest_value": 14996414166715.1,
+      "oldest_year": 2020,
+      "min_value": 14996414166715.1,
+      "max_value": 18316765021690.2,
+      "avg_value": 17446308640625.625,
+      "overall_change_pct": 21.83
+    },
+    "observations": [
+      {
+        "year": 2020,
+        "value": 14996414166715.1,
+        "is_missing": false,
+        "country_code": "CHN",
+        "country_name": "China",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2021,
+        "value": 18201698719564.0,
+        "is_missing": false,
+        "country_code": "CHN",
+        "country_name": "China",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2022,
+        "value": 18316765021690.2,
+        "is_missing": false,
+        "country_code": "CHN",
+        "country_name": "China",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2023,
+        "value": 18270356654533.2,
+        "is_missing": false,
+        "country_code": "CHN",
+        "country_name": "China",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      }
+    ]
+  },
+  "IND_NY.GDP.MKTP.CD_2015_2022": {
+    "country": {
+      "code": "IND",
+      "name": "India"
+    },
+    "indicator": {
+      "code": "NY.GDP.MKTP.CD",
+      "name": "GDP (Current US$)",
+      "category": "Economy",
+      "unit": "USD ($)",
+      "description": "Gross Domestic Product at purchaser's prices, in current U.S. dollars."
+    },
+    "meta": {
+      "source": "World Development Indicators (WDI)",
+      "source_id": "2",
+      "last_updated": "2026-10-08",
+      "total_observations": 8,
+      "valid_observations": 8,
+      "missing_observations": 0,
+      "fetched_at": "2026-10-15T12:21:29Z",
+      "from_cache": true
+    },
+    "analytics": {
+      "latest_value": 3249938492013.47,
+      "latest_year": 2022,
+      "oldest_value": 2103588360044.94,
+      "oldest_year": 2015,
+      "min_value": 2103588360044.94,
+      "max_value": 3249938492013.47,
+      "avg_value": 2710057012566.4614,
+      "overall_change_pct": 54.49
+    },
+    "observations": [
+      {
+        "year": 2015,
+        "value": 2103588360044.94,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2016,
+        "value": 2294796885663.16,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2017,
+        "value": 2651474262755.45,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2018,
+        "value": 2702929641648.74,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2019,
+        "value": 2835606256558.19,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2020,
+        "value": 2674851578587.27,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2021,
+        "value": 3167270623260.47,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2022,
+        "value": 3249938492013.47,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      }
+    ]
+  },
+  "IND_NY.GDP.MKTP.CD_2020_2022": {
+    "country": {
+      "code": "IND",
+      "name": "India"
+    },
+    "indicator": {
+      "code": "NY.GDP.MKTP.CD",
+      "name": "GDP (Current US$)",
+      "category": "Economy",
+      "unit": "USD ($)",
+      "description": "Gross Domestic Product at purchaser's prices, in current U.S. dollars."
+    },
+    "meta": {
+      "source": "World Development Indicators (WDI)",
+      "source_id": "2",
+      "last_updated": "2026-10-08",
+      "total_observations": 3,
+      "valid_observations": 3,
+      "missing_observations": 0,
+      "fetched_at": "2026-10-15T12:22:29Z",
+      "from_cache": true
+    },
+    "analytics": {
+      "latest_value": 3249938492013.47,
+      "latest_year": 2022,
+      "oldest_value": 2674851578587.27,
+      "oldest_year": 2020,
+      "min_value": 2674851578587.27,
+      "max_value": 3249938492013.47,
+      "avg_value": 3030686897953.737,
+      "overall_change_pct": 21.5
+    },
+    "observations": [
+      {
+        "year": 2020,
+        "value": 2674851578587.27,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2021,
+        "value": 3167270623260.47,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2022,
+        "value": 3249938492013.47,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      }
+    ]
+  },
+  "USA_NY.GDP.MKTP.CD_2020_2022": {
+    "country": {
+      "code": "USA",
+      "name": "United States"
+    },
+    "indicator": {
+      "code": "NY.GDP.MKTP.CD",
+      "name": "GDP (Current US$)",
+      "category": "Economy",
+      "unit": "USD ($)",
+      "description": "Gross Domestic Product at purchaser's prices, in current U.S. dollars."
+    },
+    "meta": {
+      "source": "World Development Indicators (WDI)",
+      "source_id": "2",
+      "last_updated": "2026-10-08",
+      "total_observations": 3,
+      "valid_observations": 3,
+      "missing_observations": 0,
+      "fetched_at": "2026-10-15T12:22:31Z",
+      "from_cache": true
+    },
+    "analytics": {
+      "latest_value": 26054614000000.0,
+      "latest_year": 2022,
+      "oldest_value": 21375281000000.0,
+      "oldest_year": 2020,
+      "min_value": 21375281000000.0,
+      "max_value": 26054614000000.0,
+      "avg_value": 23718513333333.332,
+      "overall_change_pct": 21.89
+    },
+    "observations": [
+      {
+        "year": 2020,
+        "value": 21375281000000.0,
+        "is_missing": false,
+        "country_code": "USA",
+        "country_name": "United States",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2021,
+        "value": 23725645000000.0,
+        "is_missing": false,
+        "country_code": "USA",
+        "country_name": "United States",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2022,
+        "value": 26054614000000.0,
+        "is_missing": false,
+        "country_code": "USA",
+        "country_name": "United States",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      }
+    ]
+  },
+  "IND_NY.GDP.MKTP.CD_2000_2024": {
+    "country": {
+      "code": "IND",
+      "name": "India"
+    },
+    "indicator": {
+      "code": "NY.GDP.MKTP.CD",
+      "name": "GDP (Current US$)",
+      "category": "Economy",
+      "unit": "USD ($)",
+      "description": "Gross Domestic Product at purchaser's prices, in current U.S. dollars."
+    },
+    "meta": {
+      "source": "World Development Indicators (WDI)",
+      "source_id": "2",
+      "last_updated": "2026-10-08",
+      "total_observations": 25,
+      "valid_observations": 25,
+      "missing_observations": 0,
+      "fetched_at": "2026-10-15T12:35:18Z",
+      "from_cache": true
+    },
+    "analytics": {
+      "latest_value": 3760813470500.86,
+      "latest_year": 2024,
+      "oldest_value": 468395521654.458,
+      "oldest_year": 2000,
+      "min_value": 468395521654.458,
+      "max_value": 3760813470500.86,
+      "avg_value": 1858724799704.9502,
+      "overall_change_pct": 702.91
+    },
+    "observations": [
+      {
+        "year": 2000,
+        "value": 468395521654.458,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2001,
+        "value": 485440139204.171,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2002,
+        "value": 514939140318.756,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2003,
+        "value": 607700687237.318,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2004,
+        "value": 709152728830.775,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2005,
+        "value": 820383763511.445,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2006,
+        "value": 940259888787.721,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2007,
+        "value": 1216736438834.96,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2008,
+        "value": 1198895139005.92,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2009,
+        "value": 1341888016994.9,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2010,
+        "value": 1675615519484.96,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2011,
+        "value": 1823051829894.55,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2012,
+        "value": 1827637590410.41,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2013,
+        "value": 1856721507621.58,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2014,
+        "value": 2039126479154.52,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2015,
+        "value": 2103588360044.94,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2016,
+        "value": 2294796885663.16,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2017,
+        "value": 2651474262755.45,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2018,
+        "value": 2702929641648.74,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2019,
+        "value": 2835606256558.19,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2020,
+        "value": 2674851578587.27,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2021,
+        "value": 3167270623260.47,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2022,
+        "value": 3249938492013.47,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2023,
+        "value": 3500906030644.76,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      },
+      {
+        "year": 2024,
+        "value": 3760813470500.86,
+        "is_missing": false,
+        "country_code": "IND",
+        "country_name": "India",
+        "indicator_code": "NY.GDP.MKTP.CD",
+        "indicator_name": "GDP (Current US$)",
+        "unit": "USD ($)",
+        "source": "World Bank Indicators API",
+        "last_updated": "2026-10-08"
+      }
+    ]
+  }
+}
