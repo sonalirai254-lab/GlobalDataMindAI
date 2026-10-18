@@ -205,3 +205,4 @@ npm run build
 1. **Persistent Dual Storage**: When Docker Desktop / FalkorDB is offline, GlobalDataMind AI seamlessly switches to a local persistent SQLite + memory engine. It never displays mock data as connected state.
 2. **Provenance & Source Tracking**: Every data point records its data source (`World Bank Open Data API v2` or `User Submission (Self-Attested)`), retrieval timestamp, and verification flag.
 3. **No Metric Fabrication**: If a metric or year is missing from the World Bank API or user records, it is reported as `null` / `NOT_RECORDED`. Calculations are strictly separated into `CALCULATED_INSIGHT` objects.
+
