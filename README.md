@@ -36,57 +36,57 @@
 ## 🏛️ System Architecture
 
 ```mermaid
-graph TB
-    subgraph Frontend["Frontend Client (React 18 + Vite)"]
-        UI[App.jsx Command Center]
-        GI_View[Global Intelligence View]
-        PI_View[Personal Intelligence View]
-        Graph_View[Interactive Graph Canvas]
-        Scenario_View[Scenario Studio]
-        Proxy[Vite Proxy: /api/* -> :8000]
+flowchart TB
+    subgraph Frontend ["Frontend Client (React 18 + Vite)"]
+        UI["App.jsx Command Center"]
+        GIView["Global Intelligence View"]
+        PIView["Personal Intelligence View"]
+        GraphView["Interactive Graph Canvas"]
+        ScenarioView["Scenario Studio"]
+        Proxy["Vite Proxy (/api/* to :8000)"]
     end
 
-    subgraph Backend["Backend API (FastAPI + Uvicorn)"]
-        Router[API Router]
-        GI_Service[Global Intelligence Service]
-        PI_Service[Personal Intelligence Service]
-        AI_Service[Evidence Analysis Engine]
-        Graph_Engine[Graph Store & Cypher Engine]
-        WB_Client[World Bank API Client]
-        Cache[Disk & In-Memory Cache]
+    subgraph Backend ["Backend API (FastAPI + Uvicorn)"]
+        Router["API Router"]
+        GIService["Global Intelligence Service"]
+        PIService["Personal Intelligence Service"]
+        AIService["Evidence Analysis Engine"]
+        GraphEngine["Graph Store & Cypher Engine"]
+        WBClient["World Bank API Client"]
+        Cache["Disk & In-Memory Cache"]
     end
 
-    subgraph Storage["Persistence Layer"]
-        FalkorDB[(FalkorDB Port 6379)]
-        SQLite[(Local Fallback Persistent Store)]
+    subgraph Storage ["Persistence Layer"]
+        FalkorDB[("FalkorDB (Port 6379)")]
+        SQLite[("Local Fallback Persistent Store")]
     end
 
-    subgraph External["External Public APIs"]
-        WorldBank[World Bank Open Data API v2]
+    subgraph External ["External Public APIs"]
+        WorldBank["World Bank Open Data API v2"]
     end
 
     UI --> Proxy
-    GI_View --> Proxy
-    PI_View --> Proxy
-    Graph_View --> Proxy
-    Scenario_View --> Proxy
+    GIView --> Proxy
+    PIView --> Proxy
+    GraphView --> Proxy
+    ScenarioView --> Proxy
     Proxy --> Router
 
-    Router --> GI_Service
-    Router --> PI_Service
-    Router --> AI_Service
-    Router --> Graph_Engine
+    Router --> GIService
+    Router --> PIService
+    Router --> AIService
+    Router --> GraphEngine
 
-    GI_Service --> WB_Client
-    WB_Client --> WorldBank
-    GI_Service --> Cache
-    GI_Service --> Graph_Engine
+    GIService --> WBClient
+    WBClient --> WorldBank
+    GIService --> Cache
+    GIService --> GraphEngine
 
-    PI_Service --> Graph_Engine
-    AI_Service --> Graph_Engine
+    PIService --> GraphEngine
+    AIService --> GraphEngine
 
-    Graph_Engine -->|Primary (if online)| FalkorDB
-    Graph_Engine -->|Fallback / Standalone| SQLite
+    GraphEngine -->|"Primary (if online)"| FalkorDB
+    GraphEngine -->|"Fallback / Standalone"| SQLite
 ```
 
 ---
