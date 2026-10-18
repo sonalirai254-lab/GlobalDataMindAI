@@ -160,8 +160,10 @@ export default function GlobalIntelligenceView({ onSelectCountryNode }) {
           fetch('/api/global/indicators'),
           fetch('/api/global/countries'),
         ])
-        if (!indRes.ok || !cRes.ok) {
-          throw new Error('Failed to load global intelligence catalogs from backend.')
+        const indCt = indRes.headers.get('content-type') || ''
+        const cCt = cRes.headers.get('content-type') || ''
+        if (!indRes.ok || !cRes.ok || !indCt.includes('application/json') || !cCt.includes('application/json')) {
+          throw new Error('Backend API catalogs unavailable. Ensure FastAPI is running on http://127.0.0.1:8000')
         }
         const indData = await indRes.json()
         const cData = await cRes.json()
@@ -844,10 +846,9 @@ export default function GlobalIntelligenceView({ onSelectCountryNode }) {
               <ShieldCheck size={12} /> VERIFIED SOURCE: WORLD BANK (v2)
             </span>
           </div>
-          <h2>Global Data Mind — World Bank Sourced Intelligence</h2>
+          <h2>Global Macroeconomic Intelligence</h2>
           <p className="global-subtitle">
-            Authoritative, multi-decade country indicators sourced live from the World Bank API.
-            Includes country search, category filtering, chronological observations, and explicit missing-data integrity.
+            Explore multi-decade indicators across 50+ sovereign economies with direct World Bank verification.
           </p>
         </div>
 
@@ -1321,8 +1322,8 @@ export default function GlobalIntelligenceView({ onSelectCountryNode }) {
           <div className="section-card table-section">
             <div className="section-header table-header-row">
               <div>
-                <h3>Empirical Observations Record ({filteredObservations.length} Rows)</h3>
-                <p>Verified historical facts retrieved from World Bank API and stored in graph memory</p>
+                <h3>Historical Observations ({filteredObservations.length} Rows)</h3>
+                <p>Verified historical facts retrieved from official World Bank records</p>
               </div>
 
               <div className="table-controls">

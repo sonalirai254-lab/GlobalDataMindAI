@@ -1,0 +1,5 @@
+# Netlify Redirects for GlobalDataMind AI Single Page App (SPA)
+# Ensures client-side routing works cleanly when reloading or accessing deep links
+
+# SPA Fallback: Redirect all requests to index.html with HTTP 200
+/*    /index.html   200

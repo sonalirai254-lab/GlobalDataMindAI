@@ -53,7 +53,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2016": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2016",
@@ -69,7 +69,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2017": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2017",
@@ -85,7 +85,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2018": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2018",
@@ -101,7 +101,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2019": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2019",
@@ -117,7 +117,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2020": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2020",
@@ -133,7 +133,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2021": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2021",
@@ -149,7 +149,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2022": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2022",
@@ -165,7 +165,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_USA_NY_GDP_MKTP_CD_2020": {
     "id": "obs_USA_NY_GDP_MKTP_CD_2020",
@@ -241,7 +241,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2001": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2001",
@@ -257,7 +257,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2002": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2002",
@@ -273,7 +273,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2003": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2003",
@@ -289,7 +289,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2004": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2004",
@@ -305,7 +305,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2005": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2005",
@@ -321,7 +321,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2006": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2006",
@@ -337,7 +337,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2007": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2007",
@@ -353,7 +353,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2008": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2008",
@@ -369,7 +369,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2009": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2009",
@@ -385,7 +385,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2010": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2010",
@@ -401,7 +401,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2011": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2011",
@@ -417,7 +417,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2012": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2012",
@@ -433,7 +433,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2013": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2013",
@@ -449,7 +449,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2014": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2014",
@@ -465,7 +465,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2023": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2023",
@@ -481,7 +481,7 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   },
   "obs_IND_NY_GDP_MKTP_CD_2024": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2024",
@@ -497,6 +497,6 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-18T13:28:43Z",
-    "version": 2
+    "version": 9
   }
 }

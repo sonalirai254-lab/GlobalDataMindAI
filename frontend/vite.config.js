@@ -36,14 +36,18 @@ export default defineConfig(({ mode }) => {
           ws: true,
           configure: (proxy, _options) => {
             proxy.on('error', (err, _req, res) => {
-              if (res && typeof res.writeHead === 'function' && !res.headersSent) {
-                res.writeHead(503, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({
-                  error: 'Backend API unavailable',
-                  message: `The GlobalDataMind AI backend is offline or starting up. Ensure uvicorn is running on port ${configuredPort}.`,
-                  detail: err.message,
-                  status: 'backend_offline'
-                }));
+              if (res && !res.headersSent) {
+                try {
+                  if (typeof res.writeHead === 'function') {
+                    res.writeHead(503, { 'Content-Type': 'application/json' });
+                  }
+                  res.end(JSON.stringify({
+                    error: 'Backend API unavailable',
+                    message: `The GlobalDataMind AI backend is offline or starting up. Ensure uvicorn is running on port ${configuredPort}.`,
+                    detail: err?.message || 'Connection refused',
+                    status: 'backend_offline'
+                  }));
+                } catch (_) {}
               }
             });
           },

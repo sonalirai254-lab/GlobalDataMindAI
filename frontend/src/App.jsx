@@ -602,14 +602,20 @@ function App() {
   const refreshAll = () => {
     fetch('/api/health')
       .then(async r => {
-        if (!r.ok) {
-          let errDetail = `HTTP ${r.status}`
-          try {
-            const errData = await r.json()
-            if (errData && (errData.message || errData.detail)) {
-              errDetail = errData.message || errData.detail
-            }
-          } catch (_) {}
+        const contentType = r.headers.get('content-type') || ''
+        const isJson = contentType.includes('application/json')
+        if (!r.ok || !isJson) {
+          let errDetail = !isJson
+            ? 'Backend API server on http://127.0.0.1:8000 is not reachable (received HTML fallback). Please ensure the FastAPI backend is running via: npm run backend'
+            : `HTTP ${r.status}`
+          if (isJson) {
+            try {
+              const errData = await r.json()
+              if (errData && (errData.message || errData.detail)) {
+                errDetail = errData.message || errData.detail
+              }
+            } catch (_) {}
+          }
           throw new Error(errDetail)
         }
         return r.json()
@@ -628,55 +634,52 @@ function App() {
       })
       .catch((err) => {
         setBackendOffline(true)
-        setBackendErrorDetail(err.message || 'Unable to reach GlobalDataMind AI backend on http://127.0.0.1:8000. Start backend using: python -m uvicorn app.main:app --port 8000')
+        const rawMsg = err?.message || ''
+        const cleanMsg = (rawMsg.includes('<!doctype') || rawMsg.includes('Unexpected token') || rawMsg.includes('valid JSON'))
+          ? 'FastAPI Backend API is offline or not responding on http://127.0.0.1:8000. Start it in terminal via: npm run backend'
+          : (rawMsg || 'Unable to reach GlobalDataMind AI backend on http://127.0.0.1:8000.')
+        setBackendErrorDetail(cleanMsg)
         setStatus({ text: 'Backend Offline (Connection Error)', connected: false, database: 'Offline' })
       })
 
-    fetch('/api/graph')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (d && d.nodes && d.nodes.length) {
-          setNodes(d.nodes)
-          setEdges(d.edges || [])
-          if (!d.nodes.some(n => n.id === selected)) {
-            setSelected(d.nodes[0].id)
+    const safeFetchJson = (url, callback) => {
+      fetch(url)
+        .then(async r => {
+          const ct = r.headers.get('content-type') || ''
+          if (r.ok && ct.includes('application/json')) {
+            return r.json()
           }
+          return null
+        })
+        .then(d => { if (d) callback(d) })
+        .catch(() => {})
+    }
+
+    safeFetchJson('/api/graph', d => {
+      if (d && d.nodes && d.nodes.length) {
+        setNodes(d.nodes)
+        setEdges(d.edges || [])
+        if (!d.nodes.some(n => n.id === selected)) {
+          setSelected(d.nodes[0].id)
         }
-      })
-      .catch(() => {})
+      }
+    })
 
-    fetch('/api/decisions')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d && d.items) setDecisions(d.items) })
-      .catch(() => {})
-
-    fetch('/api/scenarios')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d && d.scenarios) setScenarios(d.scenarios) })
-      .catch(() => {})
-
-    fetch('/api/trust-ledger')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d && d.entries) setLedgerEntries(d.entries) })
-      .catch(() => {})
-
-    fetch('/api/memory')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d && d.items) setMemories(d.items) })
-      .catch(() => {})
-
-    fetch('/api/system/metrics')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d) setMetricsData(d) })
-      .catch(() => {})
-
-    fetch('/api/quality/audit')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d) setQualityAudit(d) })
-      .catch(() => {})
+    safeFetchJson('/api/decisions', d => { if (d && d.items) setDecisions(d.items) })
+    safeFetchJson('/api/scenarios', d => { if (d && d.scenarios) setScenarios(d.scenarios) })
+    safeFetchJson('/api/trust-ledger', d => { if (d && d.entries) setLedgerEntries(d.entries) })
+    safeFetchJson('/api/memory', d => { if (d && d.items) setMemories(d.items) })
+    safeFetchJson('/api/system/metrics', d => { if (d) setMetricsData(d) })
+    safeFetchJson('/api/quality/audit', d => { if (d) setQualityAudit(d) })
 
     fetch('/api/notifications', { headers: { 'X-User-Id': 'student_profile' } })
-      .then(r => r.ok ? r.json() : null)
+      .then(async r => {
+        const ct = r.headers.get('content-type') || ''
+        if (r.ok && ct.includes('application/json')) {
+          return r.json()
+        }
+        return null
+      })
       .then(d => {
         if (d && d.notifications) {
           setNotifications(d.notifications)
@@ -685,10 +688,7 @@ function App() {
       })
       .catch(() => {})
 
-    fetch('/api/personal/profile?mask=true')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d) setAcademicSummary(d) })
-      .catch(() => {})
+    safeFetchJson('/api/personal/profile?mask=true', d => { if (d) setAcademicSummary(d) })
   }
 
   const fetchNotifications = async (filterCategory = notifFilter) => {
@@ -749,6 +749,15 @@ function App() {
   useEffect(() => {
     refreshAll()
   }, [])
+
+  // Auto-retry connection every 4 seconds if backend is offline
+  useEffect(() => {
+    if (!backendOffline) return
+    const timer = setInterval(() => {
+      refreshAll()
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [backendOffline])
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -1383,9 +1392,9 @@ function App() {
               <Sparkles size={14} className="text-amber" />
               <span>EVIDENCE-GROUNDED INTELLIGENCE PLATFORM</span>
             </div>
-            <h1>Welcome to GlobalDataMind AI</h1>
+            <h1>GlobalDataMind AI</h1>
             <p className="welcome-desc">
-              GlobalDataMind AI combines multi-decade World Bank macroeconomic indicators, authentic personal academic qualifications, and auditable reasoning in one connected platform. Explore global economic trends, manage verified educational milestones, and inspect decision logic with guaranteed zero data fabrication.
+              Unified multi-domain intelligence connecting authentic macroeconomic trends, verified academic milestones, and transparent graph reasoning—grounded in 100% verified data.
             </p>
             {/* Quick Actions */}
             <div className="dashboard-quick-actions">
@@ -1411,14 +1420,14 @@ function App() {
                 }}
               >
                 <Bell size={15} />
-                <span>View Notifications ({unreadCount})</span>
+                <span>Notifications ({unreadCount})</span>
               </button>
             </div>
           </div>
           <div className="welcome-right">
             <div className="workspace-status-badge">
               <Activity size={14} className="text-mint" />
-              <span>Live Workspace Active</span>
+              <span>Workspace Active</span>
             </div>
           </div>
         </section>
@@ -1429,10 +1438,10 @@ function App() {
           <div className="summary-status-card">
             <div className="card-top-row">
               <div className="card-icon-wrap blue"><Globe size={18} /></div>
-              <span className="card-status-pill online">World Bank API (v2) Active</span>
+              <span className="card-status-pill online">World Bank API Active</span>
             </div>
             <h3>Global Data Status</h3>
-            <p>Authoritative multi-decade observations across 260+ nations with zero data fabrication.</p>
+            <p>Authoritative multi-decade observations across 50+ economies with direct World Bank data grounding.</p>
             <div className="card-stat-highlight">
               <strong>10 Indicators</strong>
               <small>Economy, Health, Demographics</small>
@@ -1453,8 +1462,8 @@ function App() {
                 {academicSummary?.timeline?.length || 0} of 3 Milestones
               </span>
             </div>
-            <h3>Academic Verification Status</h3>
-            <p>Class 10, Class 12, and B.Tech verified milestones with privacy masking.</p>
+            <h3>Academic Verification</h3>
+            <p>Verified Class 10, Class 12, and undergraduate credentials with instant privacy protection.</p>
             <div className="milestone-status-pills">
               <span className="m-pill">
                 <strong>Class 10:</strong> {academicSummary?.timeline?.find(t => t.level_key === 'class_10')?.verification_status || 'Verified'}
@@ -1470,7 +1479,7 @@ function App() {
               className="card-action-link"
               onClick={() => scrollTo('personal-intelligence', 'My Academic Records')}
             >
-              Manage Academic Milestones <ArrowRight size={13} />
+              Manage Milestones <ArrowRight size={13} />
             </button>
           </div>
 
@@ -1478,10 +1487,10 @@ function App() {
           <div className="summary-status-card">
             <div className="card-top-row">
               <div className="card-icon-wrap amber"><Bell size={18} /></div>
-              <span className="card-status-pill unread">{unreadCount} Unread Alerts</span>
+              <span className="card-status-pill unread">{unreadCount} Alerts</span>
             </div>
             <h3>Recent Notifications</h3>
-            <p>Verification reviews, data source checks, and actionable platform updates.</p>
+            <p>Real-time verification reviews, data health checks, and platform updates.</p>
             <div className="mini-notifs-list">
               {notifications.slice(0, 2).map((n) => (
                 <div key={n.id} className="mini-notif-item">
@@ -1493,7 +1502,7 @@ function App() {
                 </div>
               ))}
               {notifications.length === 0 && (
-                <div className="mini-notif-empty">No active unread alerts.</div>
+                <div className="mini-notif-empty">No active alerts.</div>
               )}
             </div>
             <button
@@ -1514,10 +1523,10 @@ function App() {
             <div>
               <div className="trend-preview-tag">
                 <TrendingUp size={13} className="text-blue" />
-                <span>VERIFIED WORLD BANK TIME SERIES PREVIEW</span>
+                <span>WORLD BANK HISTORICAL TRAJECTORY</span>
               </div>
               <h3>Historical Trajectory: India Gross Domestic Product (GDP)</h3>
-              <p>Authentic multi-decade GDP in Current USD (2000–2024). Source: World Bank World Development Indicators (v2).</p>
+              <p>Authentic multi-decade GDP in Current USD (2000–2024) sourced from World Bank Development Indicators.</p>
             </div>
             <button
               className="btn-preview-explore"
@@ -1573,7 +1582,7 @@ function App() {
             </svg>
             <div className="preview-chart-footer">
               <span className="source-note">
-                <ShieldCheck size={12} color="#34d399" /> Official Source: World Bank Indicators API (Indicator: NY.GDP.MKTP.CD) · Zero Synthetic Data
+                <ShieldCheck size={12} color="#34d399" /> Source: World Bank Development Indicators · 100% Grounded
               </span>
               <span className="range-note">Verified Period: 2000 – 2024</span>
             </div>
@@ -1597,10 +1606,10 @@ function App() {
               <div className="section-icon-orb blue"><Database size={18} /></div>
               <div>
                 <h3>Data Explorer</h3>
-                <p>Browse curated macroeconomic indicator series, academic records, and verified observational catalogs.</p>
+                <p>Browse curated macroeconomic indicator series, academic records, and observational catalogs.</p>
               </div>
             </div>
-            <span className="source-verified-chip"><ShieldCheck size={13} /> Strict Zero-Fabrication</span>
+            <span className="source-verified-chip"><ShieldCheck size={13} /> Zero Fabrication</span>
           </div>
 
           <div className="data-explorer-grid">
@@ -1610,10 +1619,10 @@ function App() {
                 <TrendingUp size={16} className="text-blue" />
               </div>
               <h4>Gross Domestic Product (GDP)</h4>
-              <p>Annual market value of all finished goods and services produced within a nation in Current USD.</p>
+              <p>Annual market value of finished goods and services in Current USD.</p>
               <div className="explorer-card-foot">
-                <span>Code: NY.GDP.MKTP.CD</span>
-                <span className="link-arrow">Analyze Indicator →</span>
+                <span>Macroeconomic Series</span>
+                <span className="link-arrow">Analyze →</span>
               </div>
             </div>
 
@@ -1623,10 +1632,10 @@ function App() {
                 <Users size={16} className="text-mint" />
               </div>
               <h4>Total Population</h4>
-              <p>Official midyear count of all residents regardless of legal status or citizenship.</p>
+              <p>Official midyear count of all residents regardless of citizenship.</p>
               <div className="explorer-card-foot">
-                <span>Code: SP.POP.TOTL</span>
-                <span className="link-arrow">Analyze Indicator →</span>
+                <span>Demographic Census</span>
+                <span className="link-arrow">Analyze →</span>
               </div>
             </div>
 
@@ -1636,10 +1645,10 @@ function App() {
                 <HeartPulse size={16} className="text-rose" />
               </div>
               <h4>Life Expectancy at Birth</h4>
-              <p>Number of years a newborn infant would live if prevailing patterns of mortality at birth stay constant.</p>
+              <p>Average expected lifespan based on constant prevailing mortality patterns.</p>
               <div className="explorer-card-foot">
-                <span>Code: SP.DYN.LE00.IN</span>
-                <span className="link-arrow">Analyze Indicator →</span>
+                <span>Healthcare Metric</span>
+                <span className="link-arrow">Analyze →</span>
               </div>
             </div>
 
@@ -1649,10 +1658,10 @@ function App() {
                 <Globe size={16} className="text-amber" />
               </div>
               <h4>CO2 Emissions (Metric Tons)</h4>
-              <p>Carbon dioxide emissions originating from the combustion of fossil fuels and manufacture of cement.</p>
+              <p>Carbon emissions originating from fossil fuel combustion and cement production.</p>
               <div className="explorer-card-foot">
-                <span>Code: EN.ATM.CO2E.KT</span>
-                <span className="link-arrow">Analyze Indicator →</span>
+                <span>Emissions Metric</span>
+                <span className="link-arrow">Analyze →</span>
               </div>
             </div>
 
@@ -1662,10 +1671,10 @@ function App() {
                 <GraduationCap size={16} className="text-purple" />
               </div>
               <h4>Student Milestone Provenance</h4>
-              <p>Class 10, Class 12, and B.Tech authentic marks, transcripts, and official registry audits.</p>
+              <p>Class 10, Class 12, and B.Tech authentic marks, transcripts, and registry audits.</p>
               <div className="explorer-card-foot">
                 <span>3 Milestones Recorded</span>
-                <span className="link-arrow">Inspect Records →</span>
+                <span className="link-arrow">Inspect →</span>
               </div>
             </div>
 
@@ -1675,10 +1684,10 @@ function App() {
                 <Zap size={16} className="text-sky" />
               </div>
               <h4>Internet Adoption Rate</h4>
-              <p>Percentage of individuals using the internet via mobile cellular or fixed broadband networks.</p>
+              <p>Percentage of individuals using the internet via cellular or broadband networks.</p>
               <div className="explorer-card-foot">
-                <span>Code: IT.NET.USER.ZS</span>
-                <span className="link-arrow">Analyze Indicator →</span>
+                <span>Connectivity Metric</span>
+                <span className="link-arrow">Analyze →</span>
               </div>
             </div>
           </div>
@@ -1691,7 +1700,7 @@ function App() {
               <div className="section-icon-orb purple"><BrainCircuit size={18} /></div>
               <div>
                 <h3>AI Insights — Plain Language Synthesis</h3>
-                <p>Evidence-grounded explanations answering 5 core questions without complicated jargon.</p>
+                <p>Evidence-grounded key takeaways answering 5 core questions without technical jargon.</p>
               </div>
             </div>
             <div className="insight-scope-toggle">
@@ -1719,8 +1728,8 @@ function App() {
               </div>
               <p className="ai-q-content">
                 {aiInsightScope === 'global'
-                  ? "Between 2000 and 2024, India's GDP increased from $468.4 Billion to $3.94 Trillion (+740.5% total increase). Growth averaged 9.28% annually, punctuated by an acute single-year contraction in 2020 due to global pandemic disruptions."
-                  : "Your academic journey progressed sequentially across 3 milestones: Class 10 (92.4%), Class 12 in Science (89.8%), and B.Tech in Computer Science and Engineering (8.85 CGPA / 88.5% normalized equivalent)."}
+                  ? "India's GDP grew +740.5% from $468.4B (2000) to $3.94T (2024), averaging 9.3% annual expansion with a strong post-2020 rebound."
+                  : "Academic progress across 3 recorded milestones: Class 10 (92.4%), Class 12 Science (89.8%), and B.Tech CSE (8.85 CGPA / 88.5% equivalent)."}
               </p>
             </div>
 
@@ -1732,8 +1741,8 @@ function App() {
               </div>
               <p className="ai-q-content">
                 {aiInsightScope === 'global'
-                  ? "Sustained economic growth elevated India from the 13th largest global economy in 2000 to the 5th largest in 2024. Economic momentum rapidly rebounded following 2020, demonstrating high structural resilience."
-                  : "Your trajectory demonstrates sustained academic distinction (consistently above 88% equivalent) with successful specialization into computer science and autonomous engineering disciplines."}
+                  ? "India advanced from the 13th to the 5th largest global economy, demonstrating sustained macroeconomic resilience."
+                  : "Consistently distinguished performance (above 88% equivalent) with successful technical specialization in computer science."}
               </p>
             </div>
 
@@ -1745,8 +1754,8 @@ function App() {
               </div>
               <p className="ai-q-content">
                 {aiInsightScope === 'global'
-                  ? "Official World Bank Development Indicators (Series Code: NY.GDP.MKTP.CD, Source ID: 2). All 25 historical data points are cross-verified against official World Bank annual statistical releases."
-                  : "Authentic self-attested transcripts from CBSE (Central Board of Secondary Education) and IIT (BHU) Varanasi. Official cryptographic checksums verify supporting marksheets without tampering."}
+                  ? "World Bank Development Indicators verified across 25 consecutive annual reports."
+                  : "Attested transcripts from CBSE and IIT (BHU) Varanasi with cryptographic checksum verification."}
               </p>
             </div>
 
@@ -1758,8 +1767,8 @@ function App() {
               </div>
               <p className="ai-q-content">
                 {aiInsightScope === 'global'
-                  ? "World Bank indicators are released with a 1-year verification lag; data for 2025 and 2026 is strictly unrecorded. Under GlobalDataMind AI integrity rules, unrecorded years remain null and are never fabricated."
-                  : "Post-graduate qualifications or external professional certifications have not been recorded. Missing stages are preserved as empty states rather than approximated."}
+                  ? "2025–2026 data is pending annual World Bank publication; figures remain unrecorded without synthetic fabrication."
+                  : "Post-graduate credentials have not been uploaded; missing stages remain unpopulated."}
               </p>
             </div>
 
@@ -1771,8 +1780,8 @@ function App() {
               </div>
               <p className="ai-q-content">
                 {aiInsightScope === 'global'
-                  ? "Use the Country Compare mode in Global Intelligence to benchmark India's growth trajectory alongside the United States, China, and Germany, or examine correlated indicators such as CO2 emissions and population growth."
-                  : "Request authoritative institutional registry review in 'My Academic Records' or attach certified transcript PDFs to elevate status from 'Information Validated' to 'Officially Verified'."}
+                  ? "Benchmark India against the United States, China, and Germany in the Country Compare view."
+                  : "Request institutional registry review or attach marksheet documents in My Academic Records."}
               </p>
             </div>
           </div>
@@ -1780,22 +1789,22 @@ function App() {
           {/* Expandable Advanced Details */}
           <details className="advanced-ai-details">
             <summary>
-              <span>Technical & Mathematical Details (For Advanced Users)</span>
+              <span>Methodology & Analytical Details</span>
               <ChevronDown size={14} className="details-chevron" />
             </summary>
             <div className="advanced-details-content">
               <div className="adv-metrics-row">
                 <div className="adv-metric-item">
-                  <small>CAGR Formula</small>
-                  <code>((EndVal / StartVal) ^ (1/Years)) - 1</code>
+                  <small>Calculation Method</small>
+                  <strong>Compound Annual Growth Rate (CAGR)</strong>
                 </div>
                 <div className="adv-metric-item">
                   <small>Trust Ledger Groundedness</small>
                   <strong style={{ color: '#34d399' }}>100% Grounded in Official Sources</strong>
                 </div>
                 <div className="adv-metric-item">
-                  <small>Verification Engine</small>
-                  <code>EvidenceEngine v2.4 (Strict Audit)</code>
+                  <small>Audit Protocol</small>
+                  <strong>Evidence-Grounded Audit Engine</strong>
                 </div>
               </div>
             </div>
@@ -1878,7 +1887,7 @@ function App() {
               </div>
               <p>Active workspace identity: <strong>Abhishek Sharma</strong> (Workspace Admin & Student Profile).</p>
               <div className="settings-action-row">
-                <span>User ID: <code>student_profile</code></span>
+                <span>Profile: <strong>Verified Student Workspace</strong></span>
                 <button className="settings-toggle-btn" onClick={handleResetGraph}>
                   <RefreshCw size={14} /> Reset Seed Data
                 </button>
@@ -1959,10 +1968,10 @@ function App() {
             {/* 3. Hidden Connection Discovery Tool */}
             <div className="hidden-connections-panel">
               <div className="panel-title" style={{ fontSize: '15px' }}>
-                <GitBranch size={16} /> 3. Hidden Connection Discovery (Bounded Multi-Hop Traversal)
+                <GitBranch size={16} /> Hidden Connection Discovery
               </div>
               <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 10px' }}>
-                Uncover indirect relationship paths between entities that have no direct edge.
+                Uncover indirect relationship paths between entities that have no direct connection.
               </p>
               <div className="connection-pickers">
                 <div>
@@ -2208,10 +2217,10 @@ function App() {
             <div>
               <div className="area-title">
                 <div className="icon-orb"><BrainCircuit size={18} /></div>
-                2. Why-Memory: Persistent Decision Intelligence
+                Decision Memory & Rationale
               </div>
               <p className="area-subtitle">
-                Store and query meaningful organizational decisions with rationale, supporting evidence, and timestamps.
+                Store and query organizational decisions with clear rationale, supporting evidence, and timestamps.
               </p>
             </div>
             <button className="action-btn-primary" onClick={() => setShowAddDecisionModal(true)}>
@@ -2287,10 +2296,10 @@ function App() {
                 <div className="icon-orb" style={{ background: 'rgba(234, 179, 8, 0.15)', borderColor: 'rgba(234, 179, 8, 0.3)', color: '#facc15' }}>
                   <Sliders size={18} />
                 </div>
-                4. Counterfactual Scenario Studio (Side-by-Side Comparison)
+                Counterfactual Scenario Studio
               </div>
               <p className="area-subtitle">
-                Simulate hypothetical organizational changes, evaluate graph blast radius, and compare trade-offs in an isolated sandbox.
+                Simulate hypothetical organizational changes, evaluate impact radius, and compare trade-offs in an isolated sandbox.
               </p>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -2361,10 +2370,10 @@ function App() {
                 <div className="icon-orb" style={{ background: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.3)', color: '#34d399' }}>
                   <ShieldCheck size={18} />
                 </div>
-                5. Trust Ledger: Evidence Provenance & Fact Verification
+                Trust Ledger & Fact Verification
               </div>
               <p className="area-subtitle">
-                Auditable log of all AI reasoning conclusions, traversed relationships, verified facts vs assumptions.
+                Auditable log of all AI reasoning conclusions, traversed relationships, and verified facts.
               </p>
             </div>
           </div>
@@ -2454,10 +2463,10 @@ function App() {
                 <div className="icon-orb" style={{ background: 'rgba(56, 189, 248, 0.15)', borderColor: 'rgba(56, 189, 248, 0.3)', color: '#38bdf8' }}>
                   <UploadCloud size={18} />
                 </div>
-                7. Knowledge Ingestion & Provenance Engine
+                Knowledge Ingestion & Provenance
               </div>
               <p className="area-subtitle">
-                Ingest Markdown, Text, PDF, or JSON documents into FalkorDB with SHA-256 provenance tracking.
+                Import documents into the knowledge graph with cryptographic SHA-256 provenance tracking.
               </p>
             </div>
           </div>
@@ -2548,10 +2557,10 @@ function App() {
                 <div className="icon-orb" style={{ background: 'rgba(168, 85, 247, 0.15)', borderColor: 'rgba(168, 85, 247, 0.3)', color: '#c084fc' }}>
                   <Sparkles size={18} />
                 </div>
-                8. Multi-Agent Coordination Timeline
+                Multi-Agent Coordination Studio
               </div>
               <p className="area-subtitle">
-                Autonomous bounded orchestration across Research, Analysis, Planning, and Verification agents.
+                Autonomous coordination across Research, Analysis, Planning, and Verification agents.
               </p>
             </div>
           </div>
@@ -2628,10 +2637,10 @@ function App() {
                 <div className="icon-orb" style={{ background: 'rgba(239, 68, 68, 0.15)', borderColor: 'rgba(239, 68, 68, 0.3)', color: '#f87171' }}>
                   <HeartPulse size={18} />
                 </div>
-                9. System Health & Telemetry
+                System Health & Diagnostics
               </div>
               <p className="area-subtitle">
-                Real-time API latency tracking, FalkorDB socket ping, and graph quality auditor.
+                Real-time API latency tracking, database connection health, and graph quality monitoring.
               </p>
             </div>
             <button className="action-btn-secondary" onClick={() => setShowCypherModal(true)}>
@@ -3016,18 +3025,50 @@ function App() {
               </button>
               {!status.connected && (
                 <small className="notice-text">
-                  * Note: Live Cypher queries require an active FalkorDB instance (docker compose up -d falkordb).
+                  Note: Live Cypher queries require an active FalkorDB instance. Operating in local graph mode.
                 </small>
               )}
             </div>
 
             {cypherResults && (
               <div className="cypher-results">
-                <h3>Query Output:</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <h4 style={{ margin: 0, fontSize: '13px', color: '#f1f5f9' }}>Query Execution Results</h4>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>
+                    {Array.isArray(cypherResults.results) ? `${cypherResults.results.length} records returned` : 'Completed'}
+                  </span>
+                </div>
                 {cypherResults.error ? (
                   <div className="error-box">{cypherResults.error}</div>
+                ) : Array.isArray(cypherResults.results) && cypherResults.results.length > 0 ? (
+                  <div style={{ overflowX: 'auto', maxHeight: '240px', border: '1px solid #1e293b', borderRadius: '8px' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'left' }}>
+                      <thead>
+                        <tr style={{ background: '#0f172a', borderBottom: '1px solid #1e293b' }}>
+                          {Object.keys(cypherResults.results[0] || {}).map((col, cIdx) => (
+                            <th key={cIdx} style={{ padding: '8px 12px', color: '#94a3b8', fontWeight: 600 }}>{col}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {cypherResults.results.map((row, rIdx) => (
+                          <tr key={rIdx} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                            {Object.values(row).map((val, vIdx) => (
+                              <td key={vIdx} style={{ padding: '7px 12px', color: '#e2e8f0' }}>
+                                {typeof val === 'object' && val !== null
+                                  ? (Array.isArray(val) ? val.join(', ') : Object.entries(val).map(([k, v]) => `${k}: ${typeof v === 'object' ? '...' : v}`).join(' · '))
+                                  : String(val ?? '—')}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 ) : (
-                  <pre>{JSON.stringify(cypherResults.results || cypherResults, null, 2)}</pre>
+                  <div style={{ padding: '16px', background: '#090d16', border: '1px solid #1e293b', borderRadius: '8px', color: '#94a3b8', fontSize: '12px' }}>
+                    No matching records found.
+                  </div>
                 )}
               </div>
             )}

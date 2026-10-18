@@ -4728,6 +4728,309 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
 }
 
+/* ==========================================================================
+   COMPREHENSIVE RESPONSIVE DESIGN & MOBILE OPTIMIZATIONS
+   Seamlessly adapts from mobile phones (320px+) to wide screens
+   ========================================================================== */
+
+/* 1. Large Tablets & Medium Laptops (<= 1024px) */
+@media (max-width: 1024px) {
+  .dashboard-welcome-banner {
+    flex-direction: column;
+    padding: 20px 22px;
+    gap: 16px;
+  }
+  
+  .dashboard-summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .data-explorer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .settings-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .global-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .mode-switch-group {
+    width: 100%;
+  }
+
+  .mode-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* 2. Small Tablets & Large Phones (<= 768px) */
+@media (max-width: 768px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    height: auto;
+    padding: 10px 14px;
+    border-right: none;
+    border-bottom: 1px solid #1e293b;
+    background: rgba(9, 13, 23, 0.98);
+    backdrop-filter: blur(12px);
+  }
+
+  .sidebar nav {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
+    padding: 4px 0;
+  }
+
+  .sidebar nav::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  .nav-item {
+    padding: 7px 12px;
+    font-size: 11px;
+    white-space: nowrap;
+    border-radius: 6px;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding: 12px 14px 40px !important;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px 0;
+    gap: 10px;
+  }
+
+  .topbar-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .topbar-right {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .dashboard-welcome-banner {
+    padding: 18px 16px;
+  }
+
+  .welcome-title,
+  .dashboard-welcome-banner h1 {
+    font-size: 20px;
+  }
+
+  .welcome-desc {
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .dashboard-quick-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .btn-quick-action {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dashboard-summary-cards {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .dashboard-trend-preview-card {
+    padding: 16px 14px;
+  }
+
+  .trend-preview-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .btn-preview-explore {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dashboard-chart-box {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+
+  .preview-svg-chart {
+    min-width: 580px;
+    height: auto;
+  }
+
+  .data-explorer-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .ai-questions-container {
+    gap: 12px;
+  }
+
+  .ai-q-card {
+    padding: 14px 16px;
+  }
+
+  .workflow-steps-banner {
+    display: none;
+  }
+
+  .controls-card,
+  .global-controls-bar {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .control-group {
+    width: 100%;
+  }
+
+  .control-select,
+  .inline-search-input {
+    width: 100%;
+  }
+
+  .years-inputs {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .year-input {
+    flex: 1;
+  }
+
+  .analyze-btn-prominent {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modal,
+  .modal.large {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    padding: 18px 16px;
+    margin: 12px auto;
+  }
+
+  .notifications-drawer {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+
+  .table-wrapper,
+  .observations-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* 3. Mobile Phones (<= 480px) */
+@media (max-width: 480px) {
+  .welcome-title,
+  .dashboard-welcome-banner h1 {
+    font-size: 18px;
+  }
+
+  .welcome-badge {
+    font-size: 9.5px;
+    padding: 3px 8px;
+  }
+
+  .card-top-row {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .summary-status-card h3 {
+    font-size: 14px;
+  }
+
+  .summary-status-card p {
+    font-size: 12px;
+  }
+
+  .milestone-status-pills {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .m-pill {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .settings-action-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .settings-toggle-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .insight-scope-toggle {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .scope-pill {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .search-filter-inline {
+    width: 100%;
+  }
+
+  .chart-tooltip {
+    max-width: 200px;
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+}
+
 
 
 

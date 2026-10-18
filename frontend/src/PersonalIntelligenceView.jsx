@@ -298,14 +298,18 @@ export default function PersonalIntelligenceView() {
     setError(null)
     try {
       const res = await fetch(`/api/personal/profile?mask=${mask}`)
-      if (!res.ok) {
-        let errMsg = `Failed to load profile (${res.status})`
-        try {
-          const errData = await res.json()
-          if (errData && (errData.message || errData.detail)) {
-            errMsg = errData.message || errData.detail
-          }
-        } catch (_) {}
+      const ct = res.headers.get('content-type') || ''
+      const isJson = ct.includes('application/json')
+      if (!res.ok || !isJson) {
+        let errMsg = !isJson ? 'Personal Intelligence service offline. Ensure FastAPI backend is running.' : `Failed to load profile (${res.status})`
+        if (isJson) {
+          try {
+            const errData = await res.json()
+            if (errData && (errData.message || errData.detail)) {
+              errMsg = errData.message || errData.detail
+            }
+          } catch (_) {}
+        }
         throw new Error(errMsg)
       }
       const data = await res.json()
@@ -519,13 +523,12 @@ export default function PersonalIntelligenceView() {
               }}>
                 <GraduationCap size={20} />
               </div>
-              <h2 style={{ margin: 0, fontSize: '21px', fontWeight: 700, letterSpacing: '-0.4px', color: '#f3f6fc' }}>
-                Personal Intelligence — Academic Provenance & Timeline
+              <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, letterSpacing: '-0.3px', color: '#f3f6fc' }}>
+                Academic Credentials & Verified Milestones
               </h2>
             </div>
-            <p style={{ margin: '8px 0 0 46px', fontSize: '13px', color: '#9aa7bc', maxWidth: '720px', lineHeight: '1.5' }}>
-              Documented chronological milestones for <strong>Class 10</strong>, <strong>Class 12</strong>, and <strong>B.Tech</strong>.
-              Strictly preserves user ground truth, calculates isolated derived insights, and never fabricates missing records.
+            <p style={{ margin: '6px 0 0 46px', fontSize: '13px', color: '#9aa7bc', maxWidth: '680px', lineHeight: '1.45' }}>
+              Track verified educational milestones from secondary education to graduation with instant privacy masking.
             </p>
           </div>
 
@@ -545,7 +548,7 @@ export default function PersonalIntelligenceView() {
               title="Toggle masking on sensitive roll numbers and registration details"
             >
               {maskSensitive ? <EyeOff size={15} /> : <Eye size={15} />}
-              {maskSensitive ? 'Privacy Protected (Masked)' : 'Privacy Masking: Off'}
+              {maskSensitive ? 'Privacy Protected' : 'Masking Off'}
             </button>
 
             {/* Quick Sample Button */}
@@ -555,7 +558,7 @@ export default function PersonalIntelligenceView() {
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 12px', borderRadius: '8px' }}
               title="Populate complete sample Class 10, Class 12, and B.Tech profile"
             >
-              <Sparkles size={14} color="#f0bc78" /> Load Sample Profile
+              <Sparkles size={14} color="#f0bc78" /> Load Sample
             </button>
 
             {/* Add Record Button */}
@@ -569,7 +572,7 @@ export default function PersonalIntelligenceView() {
                 color: '#fff', fontWeight: 600, border: 'none'
               }}
             >
-              <Plus size={15} /> Record Academic Milestone
+              <Plus size={15} /> Add Milestone
             </button>
 
             {/* Evidence-Based Academic AI Analysis Button */}
@@ -580,7 +583,7 @@ export default function PersonalIntelligenceView() {
               title="Perform evidence-based academic analysis on recorded qualifications"
             >
               <BrainCircuit size={14} className={personalAiLoading ? 'spin' : ''} />
-              <span>{personalAiLoading ? 'Synthesizing...' : 'Evidence-Based Academic Analysis'}</span>
+              <span>{personalAiLoading ? 'Analyzing...' : 'AI Trajectory Analysis'}</span>
             </button>
 
             {profile?.summary?.recorded_milestones_count > 0 && (
@@ -999,14 +1002,14 @@ export default function PersonalIntelligenceView() {
                   <div style={{ fontSize: '11px', color: '#9aa7bc' }}>
                     {insight.interpretation}
                   </div>
-                  <div style={{ fontSize: '10px', color: '#78869f', fontFamily: 'monospace', paddingTop: '4px', borderTop: '1px dashed rgba(255,255,255,0.06)' }}>
-                    Formula: {insight.derivation_formula}
+                  <div style={{ fontSize: '11px', color: '#8896ab', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <span style={{ color: '#a18aff', fontWeight: 600 }}>Calculation: </span>{insight.derivation_formula}
                   </div>
                 </div>
               ))
             ) : (
               <div style={{ padding: '30px', textAlign: 'center', color: '#78869f', fontSize: '13px' }}>
-                Record academic milestones to compute derived insights.
+                Add academic milestones to compute derived insights.
               </div>
             )}
 
@@ -1016,7 +1019,7 @@ export default function PersonalIntelligenceView() {
               background: 'rgba(240, 188, 120, 0.05)', border: '1px solid rgba(240, 188, 120, 0.2)',
               fontSize: '11px', color: '#f0bc78', lineHeight: '1.4'
             }}>
-              <strong>Zero-Fabrication Notice:</strong> Calculated insights are mathematical projections derived solely from verified records. Missing milestones are never guessed or filled with default estimates.
+              <strong>Verified Integrity:</strong> Insights are derived strictly from attested records. Unrecorded milestones are never estimated.
             </div>
           </div>
         </div>

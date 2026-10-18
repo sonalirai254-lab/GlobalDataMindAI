@@ -1,0 +1,32 @@
+# GlobalDataMind AI - Root Netlify Deployment Configuration
+
+[build]
+  # Build from root by invoking frontend package commands
+  base = ""
+  publish = "frontend/dist"
+  command = "npm --prefix frontend install && npm --prefix frontend run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
+
+# Headers for enhanced security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache static assets for high execution performance
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# SPA Fallback rule: routes all frontend browser paths to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

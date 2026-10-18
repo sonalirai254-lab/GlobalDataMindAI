@@ -1,9 +1,391 @@
 {
   "version": "2.2.0",
   "storage_mode": "persistent_json_file",
-  "last_saved": "2026-10-18T15:37:11Z",
+  "last_saved": "2026-10-18T16:16:00Z",
   "total_count": 200,
   "notifications": [
+    {
+      "id": "notif_1792340160_e5112b",
+      "user_id": "alice_user",
+      "title": "Alice Private Notice",
+      "message": "Sensitive verification information for Alice only.",
+      "category": "VERIFICATION",
+      "severity": "INFO",
+      "status": "UNREAD",
+      "timestamp": "2026-10-18T16:16:00Z",
+      "related_record": {},
+      "action": {}
+    },
+    {
+      "id": "notif_1792340160_cb9a9c",
+      "user_id": "student_profile",
+      "title": "Class 10 Review Completed",
+      "message": "Your Class 10 marksheet has been reviewed.",
+      "category": "VERIFICATION",
+      "severity": "SUCCESS",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:16:00Z",
+      "related_record": {},
+      "action": {},
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340160_033e0c",
+      "user_id": "student_profile",
+      "title": "Supporting Document Attached: Class 12",
+      "message": "Attached evidence document 'Class_12_Marksheet_Original.pdf' (transcript) to Class 12 record.",
+      "category": "VERIFICATION",
+      "severity": "INFO",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:16:00Z",
+      "related_record": {
+        "id": "acad_class_12",
+        "type": "academic_record",
+        "level": "Class 12",
+        "document_id": "doc_class_12_1792340160"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_class_12",
+        "label": "View Evidence"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340160_2658cc",
+      "user_id": "student_profile",
+      "title": "Class 12 Record Awaiting Verification",
+      "message": "Academic record for Class 12 at St. Xavier's (2020) was submitted. Basic format validated; pending authoritative review.",
+      "category": "VERIFICATION",
+      "severity": "WARNING",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:16:00Z",
+      "related_record": {
+        "id": "acad_class_12",
+        "type": "academic_record",
+        "level": "Class 12",
+        "institution": "St. Xavier's",
+        "status": "Pending Verification"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_class_12",
+        "label": "Review Record"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340160_952a8b",
+      "user_id": "student_profile",
+      "title": "Class 10 Record Awaiting Verification",
+      "message": "Academic record for Class 10 at Springdales School (2018) was submitted. Basic format validated; pending authoritative review.",
+      "category": "VERIFICATION",
+      "severity": "WARNING",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:16:00Z",
+      "related_record": {
+        "id": "acad_class_10",
+        "type": "academic_record",
+        "level": "Class 10",
+        "institution": "Springdales School",
+        "status": "Re-verification Required"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_class_10",
+        "label": "Review Record"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340160_c611c6",
+      "user_id": "student_profile",
+      "title": "Class 10 Verified Officially",
+      "message": "Official verification completed by Admin Reviewer (CBSE Central Registry). Record confirmed as authentic.",
+      "category": "VERIFICATION",
+      "severity": "SUCCESS",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:16:00Z",
+      "related_record": {
+        "id": "acad_class_10",
+        "type": "academic_record",
+        "level": "Class 10",
+        "status": "Verified"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_class_10",
+        "label": "View Decision"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340160_b80da9",
+      "user_id": "student_profile",
+      "title": "Class 10 Record Awaiting Verification",
+      "message": "Academic record for Class 10 at Springdales School (2018) was submitted. Basic format validated; pending authoritative review.",
+      "category": "VERIFICATION",
+      "severity": "WARNING",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:16:00Z",
+      "related_record": {
+        "id": "acad_class_10",
+        "type": "academic_record",
+        "level": "Class 10",
+        "institution": "Springdales School",
+        "status": "Pending Verification"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_class_10",
+        "label": "Review Record"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340160_bc4d5e",
+      "user_id": "student_profile",
+      "title": "B.Tech Verification Failed",
+      "message": "Verification could not be confirmed by Academic Audit Cell. Reason: Registration number mismatch in university examination records..",
+      "category": "VERIFICATION",
+      "severity": "ERROR",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:16:00Z",
+      "related_record": {
+        "id": "acad_btech",
+        "type": "academic_record",
+        "level": "B.Tech",
+        "status": "Verification Failed"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_btech",
+        "label": "View Decision"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340160_1bb452",
+      "user_id": "student_profile",
+      "title": "B.Tech Record Awaiting Verification",
+      "message": "Academic record for B.Tech at ABC Institute of Technology (2024) was submitted. Basic format validated; pending authoritative review.",
+      "category": "VERIFICATION",
+      "severity": "WARNING",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:16:00Z",
+      "related_record": {
+        "id": "acad_btech",
+        "type": "academic_record",
+        "level": "B.Tech",
+        "institution": "ABC Institute of Technology",
+        "status": "Pending Verification"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_btech",
+        "label": "Review Record"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340160_c9509d",
+      "user_id": "student_profile",
+      "title": "Class 10 Verified Officially",
+      "message": "Official verification completed by Dr. A. Sharma (ICSE National Registry). Record confirmed as authentic.",
+      "category": "VERIFICATION",
+      "severity": "SUCCESS",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:16:00Z",
+      "related_record": {
+        "id": "acad_class_10",
+        "type": "academic_record",
+        "level": "Class 10",
+        "status": "Verified"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_class_10",
+        "label": "View Decision"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340159_0a95cf",
+      "user_id": "student_profile",
+      "title": "Class 10 Record Awaiting Verification",
+      "message": "Academic record for Class 10 at National Public School (2017) was submitted. Basic format validated; pending authoritative review.",
+      "category": "VERIFICATION",
+      "severity": "WARNING",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:15:59Z",
+      "related_record": {
+        "id": "acad_class_10",
+        "type": "academic_record",
+        "level": "Class 10",
+        "institution": "National Public School",
+        "status": "Pending Verification"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_class_10",
+        "label": "Review Record"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340159_18dfb5",
+      "user_id": "student_profile",
+      "title": "Verification In Progress: Class 12",
+      "message": "Verification request initiated for Class 12 (Delhi Public School). Examination board / registrar verification in progress.",
+      "category": "VERIFICATION",
+      "severity": "INFO",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:15:59Z",
+      "related_record": {
+        "id": "acad_class_12",
+        "type": "academic_record",
+        "level": "Class 12",
+        "status": "Verification In Progress"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_class_12",
+        "label": "Track Status"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340159_758f8c",
+      "user_id": "student_profile",
+      "title": "Class 12 Record Awaiting Verification",
+      "message": "Academic record for Class 12 at Delhi Public School (2020) was submitted. Basic format validated; pending authoritative review.",
+      "category": "VERIFICATION",
+      "severity": "WARNING",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:15:59Z",
+      "related_record": {
+        "id": "acad_class_12",
+        "type": "academic_record",
+        "level": "Class 12",
+        "institution": "Delhi Public School",
+        "status": "Pending Verification"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_class_12",
+        "label": "Review Record"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340159_e173c1",
+      "user_id": "student_profile",
+      "title": "Class 10 Record Awaiting Verification",
+      "message": "Academic record for Class 10 at Delhi Public School (2018) was submitted. Basic format validated; pending authoritative review.",
+      "category": "VERIFICATION",
+      "severity": "WARNING",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:15:59Z",
+      "related_record": {
+        "id": "acad_class_10",
+        "type": "academic_record",
+        "level": "Class 10",
+        "institution": "Delhi Public School",
+        "status": "Pending Verification"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_class_10",
+        "label": "Review Record"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340159_028317",
+      "user_id": "student_profile",
+      "title": "Class 12 Record Awaiting Verification",
+      "message": "Academic record for Class 12 at Springdales School (2020) was submitted. Basic format validated; pending authoritative review.",
+      "category": "VERIFICATION",
+      "severity": "WARNING",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:15:59Z",
+      "related_record": {
+        "id": "acad_class_12",
+        "type": "academic_record",
+        "level": "Class 12",
+        "institution": "Springdales School",
+        "status": "Pending Verification"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_class_12",
+        "label": "Review Record"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340159_662c49",
+      "user_id": "student_profile",
+      "title": "Class 10 Record Awaiting Verification",
+      "message": "Academic record for Class 10 at Springdales School (2018) was submitted. Basic format validated; pending authoritative review.",
+      "category": "VERIFICATION",
+      "severity": "WARNING",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:15:59Z",
+      "related_record": {
+        "id": "acad_class_10",
+        "type": "academic_record",
+        "level": "Class 10",
+        "institution": "Springdales School",
+        "status": "Pending Verification"
+      },
+      "action": {
+        "target_tab": "personal-intelligence",
+        "record_id": "acad_class_10",
+        "label": "Review Record"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340159_f0697d",
+      "user_id": "student_profile",
+      "title": "World Bank API Notice: USA",
+      "message": "World Bank API query for USA (NY.GDP.MKTP.CD) encountered communication delay: World Bank API request timed out after 12.0s..",
+      "category": "DATA_SOURCE",
+      "severity": "WARNING",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:15:59Z",
+      "related_record": {
+        "type": "global_data_source",
+        "country": "USA",
+        "indicator": "NY.GDP.MKTP.CD"
+      },
+      "action": {
+        "target_tab": "global-intelligence",
+        "label": "View Indicators"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
+    {
+      "id": "notif_1792340159_1b8503",
+      "user_id": "student_profile",
+      "title": "World Bank API Notice: USA",
+      "message": "World Bank API query for USA (NY.GDP.MKTP.CD) encountered communication delay: Failed to connect to World Bank API: DNS resolution failed.",
+      "category": "DATA_SOURCE",
+      "severity": "WARNING",
+      "status": "READ",
+      "timestamp": "2026-10-18T16:15:59Z",
+      "related_record": {
+        "type": "global_data_source",
+        "country": "USA",
+        "indicator": "NY.GDP.MKTP.CD"
+      },
+      "action": {
+        "target_tab": "global-intelligence",
+        "label": "View Indicators"
+      },
+      "read_at": "2026-10-18T16:16:00Z"
+    },
     {
       "id": "notif_1792337831_5639f8",
       "user_id": "alice_user",
@@ -3870,388 +4252,6 @@
         "label": "View Indicators"
       },
       "read_at": "2026-10-18T10:32:22Z"
-    },
-    {
-      "id": "notif_1792319539_1bd868",
-      "user_id": "student_profile",
-      "title": "World Bank API Notice: USA",
-      "message": "World Bank API query for USA (NY.GDP.MKTP.CD) encountered communication delay: Failed to connect to World Bank API: DNS resolution failed.",
-      "category": "DATA_SOURCE",
-      "severity": "WARNING",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:32:19Z",
-      "related_record": {
-        "type": "global_data_source",
-        "country": "USA",
-        "indicator": "NY.GDP.MKTP.CD"
-      },
-      "action": {
-        "target_tab": "global-intelligence",
-        "label": "View Indicators"
-      },
-      "read_at": "2026-10-18T10:32:22Z"
-    },
-    {
-      "id": "notif_1792319057_aa3515",
-      "user_id": "alice_user",
-      "title": "Alice Private Notice",
-      "message": "Sensitive verification information for Alice only.",
-      "category": "VERIFICATION",
-      "severity": "INFO",
-      "status": "UNREAD",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {},
-      "action": {}
-    },
-    {
-      "id": "notif_1792319057_25fa13",
-      "user_id": "student_profile",
-      "title": "Class 10 Review Completed",
-      "message": "Your Class 10 marksheet has been reviewed.",
-      "category": "VERIFICATION",
-      "severity": "SUCCESS",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {},
-      "action": {},
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319057_abac35",
-      "user_id": "student_profile",
-      "title": "Supporting Document Attached: Class 12",
-      "message": "Attached evidence document 'Class_12_Marksheet_Original.pdf' (transcript) to Class 12 record.",
-      "category": "VERIFICATION",
-      "severity": "INFO",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {
-        "id": "acad_class_12",
-        "type": "academic_record",
-        "level": "Class 12",
-        "document_id": "doc_class_12_1792319057"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_class_12",
-        "label": "View Evidence"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319057_4404af",
-      "user_id": "student_profile",
-      "title": "Class 12 Record Awaiting Verification",
-      "message": "Academic record for Class 12 at St. Xavier's (2020) was submitted. Basic format validated; pending authoritative review.",
-      "category": "VERIFICATION",
-      "severity": "WARNING",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {
-        "id": "acad_class_12",
-        "type": "academic_record",
-        "level": "Class 12",
-        "institution": "St. Xavier's",
-        "status": "Pending Verification"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_class_12",
-        "label": "Review Record"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319057_baa205",
-      "user_id": "student_profile",
-      "title": "Class 10 Record Awaiting Verification",
-      "message": "Academic record for Class 10 at Springdales School (2018) was submitted. Basic format validated; pending authoritative review.",
-      "category": "VERIFICATION",
-      "severity": "WARNING",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {
-        "id": "acad_class_10",
-        "type": "academic_record",
-        "level": "Class 10",
-        "institution": "Springdales School",
-        "status": "Re-verification Required"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_class_10",
-        "label": "Review Record"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319057_010733",
-      "user_id": "student_profile",
-      "title": "Class 10 Verified Officially",
-      "message": "Official verification completed by Admin Reviewer (CBSE Central Registry). Record confirmed as authentic.",
-      "category": "VERIFICATION",
-      "severity": "SUCCESS",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {
-        "id": "acad_class_10",
-        "type": "academic_record",
-        "level": "Class 10",
-        "status": "Verified"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_class_10",
-        "label": "View Decision"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319057_e4fcce",
-      "user_id": "student_profile",
-      "title": "Class 10 Record Awaiting Verification",
-      "message": "Academic record for Class 10 at Springdales School (2018) was submitted. Basic format validated; pending authoritative review.",
-      "category": "VERIFICATION",
-      "severity": "WARNING",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {
-        "id": "acad_class_10",
-        "type": "academic_record",
-        "level": "Class 10",
-        "institution": "Springdales School",
-        "status": "Pending Verification"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_class_10",
-        "label": "Review Record"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319057_412028",
-      "user_id": "student_profile",
-      "title": "B.Tech Verification Failed",
-      "message": "Verification could not be confirmed by Academic Audit Cell. Reason: Registration number mismatch in university examination records..",
-      "category": "VERIFICATION",
-      "severity": "ERROR",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {
-        "id": "acad_btech",
-        "type": "academic_record",
-        "level": "B.Tech",
-        "status": "Verification Failed"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_btech",
-        "label": "View Decision"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319057_0cf6fa",
-      "user_id": "student_profile",
-      "title": "B.Tech Record Awaiting Verification",
-      "message": "Academic record for B.Tech at ABC Institute of Technology (2024) was submitted. Basic format validated; pending authoritative review.",
-      "category": "VERIFICATION",
-      "severity": "WARNING",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {
-        "id": "acad_btech",
-        "type": "academic_record",
-        "level": "B.Tech",
-        "institution": "ABC Institute of Technology",
-        "status": "Pending Verification"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_btech",
-        "label": "Review Record"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319057_ccd079",
-      "user_id": "student_profile",
-      "title": "Class 10 Verified Officially",
-      "message": "Official verification completed by Dr. A. Sharma (ICSE National Registry). Record confirmed as authentic.",
-      "category": "VERIFICATION",
-      "severity": "SUCCESS",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {
-        "id": "acad_class_10",
-        "type": "academic_record",
-        "level": "Class 10",
-        "status": "Verified"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_class_10",
-        "label": "View Decision"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319057_73b52c",
-      "user_id": "student_profile",
-      "title": "Class 10 Record Awaiting Verification",
-      "message": "Academic record for Class 10 at National Public School (2017) was submitted. Basic format validated; pending authoritative review.",
-      "category": "VERIFICATION",
-      "severity": "WARNING",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {
-        "id": "acad_class_10",
-        "type": "academic_record",
-        "level": "Class 10",
-        "institution": "National Public School",
-        "status": "Pending Verification"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_class_10",
-        "label": "Review Record"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319057_18579c",
-      "user_id": "student_profile",
-      "title": "Verification In Progress: Class 12",
-      "message": "Verification request initiated for Class 12 (Delhi Public School). Examination board / registrar verification in progress.",
-      "category": "VERIFICATION",
-      "severity": "INFO",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {
-        "id": "acad_class_12",
-        "type": "academic_record",
-        "level": "Class 12",
-        "status": "Verification In Progress"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_class_12",
-        "label": "Track Status"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319057_89d7b8",
-      "user_id": "student_profile",
-      "title": "Class 12 Record Awaiting Verification",
-      "message": "Academic record for Class 12 at Delhi Public School (2020) was submitted. Basic format validated; pending authoritative review.",
-      "category": "VERIFICATION",
-      "severity": "WARNING",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {
-        "id": "acad_class_12",
-        "type": "academic_record",
-        "level": "Class 12",
-        "institution": "Delhi Public School",
-        "status": "Pending Verification"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_class_12",
-        "label": "Review Record"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319057_f503a6",
-      "user_id": "student_profile",
-      "title": "Class 10 Record Awaiting Verification",
-      "message": "Academic record for Class 10 at Delhi Public School (2018) was submitted. Basic format validated; pending authoritative review.",
-      "category": "VERIFICATION",
-      "severity": "WARNING",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:17Z",
-      "related_record": {
-        "id": "acad_class_10",
-        "type": "academic_record",
-        "level": "Class 10",
-        "institution": "Delhi Public School",
-        "status": "Pending Verification"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_class_10",
-        "label": "Review Record"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319056_faf41d",
-      "user_id": "student_profile",
-      "title": "Class 12 Record Awaiting Verification",
-      "message": "Academic record for Class 12 at Springdales School (2020) was submitted. Basic format validated; pending authoritative review.",
-      "category": "VERIFICATION",
-      "severity": "WARNING",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:16Z",
-      "related_record": {
-        "id": "acad_class_12",
-        "type": "academic_record",
-        "level": "Class 12",
-        "institution": "Springdales School",
-        "status": "Pending Verification"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_class_12",
-        "label": "Review Record"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319056_d97fe7",
-      "user_id": "student_profile",
-      "title": "Class 10 Record Awaiting Verification",
-      "message": "Academic record for Class 10 at Springdales School (2018) was submitted. Basic format validated; pending authoritative review.",
-      "category": "VERIFICATION",
-      "severity": "WARNING",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:16Z",
-      "related_record": {
-        "id": "acad_class_10",
-        "type": "academic_record",
-        "level": "Class 10",
-        "institution": "Springdales School",
-        "status": "Pending Verification"
-      },
-      "action": {
-        "target_tab": "personal-intelligence",
-        "record_id": "acad_class_10",
-        "label": "Review Record"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
-    },
-    {
-      "id": "notif_1792319055_74ec67",
-      "user_id": "student_profile",
-      "title": "World Bank API Notice: USA",
-      "message": "World Bank API query for USA (NY.GDP.MKTP.CD) encountered communication delay: World Bank API request timed out after 12.0s..",
-      "category": "DATA_SOURCE",
-      "severity": "WARNING",
-      "status": "READ",
-      "timestamp": "2026-10-18T10:24:15Z",
-      "related_record": {
-        "type": "global_data_source",
-        "country": "USA",
-        "indicator": "NY.GDP.MKTP.CD"
-      },
-      "action": {
-        "target_tab": "global-intelligence",
-        "label": "View Indicators"
-      },
-      "read_at": "2026-10-18T10:24:17Z"
     }
   ]
 }

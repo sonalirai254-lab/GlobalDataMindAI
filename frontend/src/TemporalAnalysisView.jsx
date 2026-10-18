@@ -275,16 +275,15 @@ task_104,2024-05-18 10:30:00 EDT,Task,DST transition task`
             <History size={18} />
           </div>
           <div>
-            <h3>Universal Temporal Data Analysis & Verification System</h3>
+            <h3>Temporal Intelligence & Timeline Studio</h3>
             <p>
-              Normalized UTC temporal intelligence, multi-format parsing (JSON, CSV, Logs, Documents),
-              strict zero-fabrication precision tiers, and audit-grade review flagging.
+              Standardized timeline tracking, multi-format timestamp parsing, and audit-grade verification.
             </p>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <span className="source-verified-chip" style={{ background: 'rgba(16, 185, 129, 0.12)', borderColor: 'rgba(16, 185, 129, 0.3)', color: '#34d399' }}>
-            <ShieldCheck size={13} /> Strict Zero-Fabrication (Rule 10)
+            <ShieldCheck size={13} /> Zero-Fabrication Guarantee
           </span>
           {reviewFlags.length > 0 && (
             <span className="source-verified-chip" style={{ background: 'rgba(239, 68, 68, 0.12)', borderColor: 'rgba(239, 68, 68, 0.3)', color: '#ef4444' }}>
@@ -501,13 +500,13 @@ task_104,2024-05-18 10:30:00 EDT,Task,DST transition task`
                       </div>
                     </div>
 
-                    {/* Strict Rule 10: Year-only Bounded Time Range Display */}
+                    {/* Year-only Bounded Time Range Display */}
                     {isYearOnly && temp.time_range && (
                       <div style={{ marginTop: '10px', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '6px', padding: '8px 12px', fontSize: '12px' }}>
                         <div style={{ color: '#f59e0b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Info size={13} /> Strict Rule 10 Non-Fabrication Constraint:
+                          <Info size={13} /> Annual Time-Range Constraint:
                         </div>
-                        <div style={{ color: '#cbd5e1', marginTop: '4px', fontSize: '11px', fontFamily: "'JetBrains Mono', monospace" }}>
+                        <div style={{ color: '#cbd5e1', marginTop: '4px', fontSize: '11px' }}>
                           Bounded Range: {temp.time_range.start} → {temp.time_range.end}
                         </div>
                         <div style={{ color: '#94a3b8', fontSize: '11px', marginTop: '2px' }}>
@@ -520,7 +519,7 @@ task_104,2024-05-18 10:30:00 EDT,Task,DST transition task`
                     {temp.validation_flags && temp.validation_flags.length > 0 && (
                       <div style={{ marginTop: '10px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '6px', padding: '8px 12px', fontSize: '12px' }}>
                         <div style={{ color: '#ef4444', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <AlertTriangle size={13} /> Temporal Flags:
+                          <AlertTriangle size={13} /> Validation Alerts:
                         </div>
                         <ul style={{ margin: '4px 0 0 16px', color: '#fca5a5', fontSize: '11px' }}>
                           {temp.validation_flags.map((flag, fidx) => (
@@ -530,10 +529,11 @@ task_104,2024-05-18 10:30:00 EDT,Task,DST transition task`
                       </div>
                     )}
 
-                    {/* Record payload snippet */}
+                    {/* Record payload clean summary */}
                     {rec.data && Object.keys(rec.data).length > 0 && (
-                      <div style={{ marginTop: '10px', fontSize: '11px', color: '#64748b' }}>
-                        Data: {JSON.stringify(rec.data).slice(0, 160)}...
+                      <div style={{ marginTop: '10px', fontSize: '11px', color: '#94a3b8', display: 'flex', gap: '6px' }}>
+                        <span style={{ color: '#64748b' }}>Item:</span>
+                        <span>{rec.data.label || rec.data.name || Object.values(rec.data).filter(v => typeof v === 'string').join(' · ') || 'Active Record'}</span>
                       </div>
                     )}
                   </div>
@@ -567,7 +567,7 @@ task_104,2024-05-18 10:30:00 EDT,Task,DST transition task`
               { label: 'RFC 2822 (EDT)', val: 'Mon, 18 May 2024 10:30:00 -0400', created: '' },
               { label: 'Unix Epoch (ms)', val: '1716028200000', created: '' },
               { label: 'Apache CLF', val: '[18/May/2024:14:30:00 +0000]', created: '' },
-              { label: 'Year Only (Rule 10)', val: '2023', created: '' },
+              { label: 'Year Only', val: '2023', created: '' },
               { label: 'Conflicting Dates', val: '2024-01-01T00:00:00Z', created: '2021-01-01T00:00:00Z' },
               { label: 'Implausible (Feb 31)', val: '2024-02-31T12:00:00Z', created: '' },
               { label: 'Missing Date', val: '', created: '' },
@@ -674,10 +674,10 @@ task_104,2024-05-18 10:30:00 EDT,Task,DST transition task`
                 </div>
               </div>
 
-              {/* Time Range Details (Strict Rule 10) */}
+              {/* Time Range Details */}
               {inspectResult.time_range && (
                 <div style={{ marginTop: '14px', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '6px', padding: '10px 14px', fontSize: '12px' }}>
-                  <div style={{ color: '#f59e0b', fontWeight: 600 }}>Bounded Range & Limitation Note (Strict Rule 10):</div>
+                  <div style={{ color: '#f59e0b', fontWeight: 600 }}>Annual Bounded Time Period:</div>
                   <div style={{ fontFamily: "'JetBrains Mono', monospace", color: '#e2e8f0', marginTop: '4px' }}>
                     Range: {inspectResult.time_range.start} → {inspectResult.time_range.end}
                   </div>
@@ -954,8 +954,8 @@ task_104,2024-05-18 10:30:00 EDT,Task,DST transition task`
                       </span>
                     </div>
 
-                    <div style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '8px', fontFamily: "'JetBrains Mono', monospace" }}>
-                      Raw input: <code style={{ color: '#f59e0b' }}>{temp.original_event_time || 'None (Missing)'}</code>
+                    <div style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '8px' }}>
+                      Recorded Timestamp: <span style={{ color: '#f59e0b', fontWeight: 600 }}>{temp.original_event_time || 'None (Missing)'}</span>
                     </div>
 
                     {temp.validation_flags && temp.validation_flags.length > 0 && (
