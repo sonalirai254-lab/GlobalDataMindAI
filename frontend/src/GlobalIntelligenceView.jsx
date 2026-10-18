@@ -198,6 +198,9 @@ export default function GlobalIntelligenceView({ onSelectCountryNode }) {
         if (res.status === 502) {
           throw new Error('World Bank API communication error. Check your internet connection or try again.')
         }
+        if (res.status === 503) {
+          throw new Error(data.message || data.detail || 'GlobalDataMind AI backend is offline. Ensure uvicorn is running on port 8000.')
+        }
         throw new Error(data.detail || data.message || 'Failed to fetch observations.')
       }
       setSingleData(data)
@@ -233,6 +236,9 @@ export default function GlobalIntelligenceView({ onSelectCountryNode }) {
         }
         if (res.status === 502) {
           throw new Error('World Bank comparison service unavailable. Check network connectivity.')
+        }
+        if (res.status === 503) {
+          throw new Error(data.message || data.detail || 'GlobalDataMind AI backend is offline. Ensure uvicorn is running on port 8000.')
         }
         throw new Error(data.detail || data.message || 'Comparison query failed.')
       }
@@ -830,9 +836,13 @@ export default function GlobalIntelligenceView({ onSelectCountryNode }) {
       {/* Top Header Banner */}
       <div className="global-header">
         <div className="global-header-left">
-          <div className="global-badge">
-            <Globe size={15} className="text-blue" />
-            <span>GLOBAL HISTORICAL INTELLIGENCE</span>
+          <div className="global-badge" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <Globe size={15} className="text-blue" /> GLOBAL HISTORICAL INTELLIGENCE
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: '10px', fontWeight: 700 }}>
+              <ShieldCheck size={12} /> VERIFIED SOURCE: WORLD BANK (v2)
+            </span>
           </div>
           <h2>Global Data Mind — World Bank Sourced Intelligence</h2>
           <p className="global-subtitle">
@@ -857,6 +867,49 @@ export default function GlobalIntelligenceView({ onSelectCountryNode }) {
               <BarChart3 size={15} />
               <span>Country Compare ({compareCountries.length})</span>
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 5-Step Guided Workflow Navigation Banner */}
+      <div className="workflow-steps-banner">
+        <div className="workflow-step active">
+          <span className="step-num">1</span>
+          <div className="step-text">
+            <strong>1. Select Country</strong>
+            <small>{mode === 'single' ? (currentCountryMeta ? currentCountryMeta.name : selectedCountry) : `${compareCountries.length} Selected`}</small>
+          </div>
+        </div>
+        <div className="workflow-step-arrow">→</div>
+        <div className="workflow-step active">
+          <span className="step-num">2</span>
+          <div className="step-text">
+            <strong>2. Select Indicator</strong>
+            <small>{currentIndicatorMeta ? currentIndicatorMeta.name.slice(0, 20) + '…' : 'GDP / Population'}</small>
+          </div>
+        </div>
+        <div className="workflow-step-arrow">→</div>
+        <div className="workflow-step active">
+          <span className="step-num">3</span>
+          <div className="step-text">
+            <strong>3. Select Year Range</strong>
+            <small>{startYear} – {endYear}</small>
+          </div>
+        </div>
+        <div className="workflow-step-arrow">→</div>
+        <div className="workflow-step highlight">
+          <span className="step-num">4</span>
+          <div className="step-text">
+            <strong>4. Click Analyze</strong>
+            <small>World Bank API</small>
+          </div>
+        </div>
+        <div className="workflow-step-arrow">→</div>
+        <div className="workflow-step">
+          <span className="step-num">5</span>
+          <div className="step-text">
+            <strong>5. View Chart & Findings</strong>
+            <small>Evidence & Gaps</small>
           </div>
         </div>
       </div>
@@ -983,12 +1036,13 @@ export default function GlobalIntelligenceView({ onSelectCountryNode }) {
           <div className="control-group actions-group">
             <label>&nbsp;</label>
             <button
-              className="primary-action-btn"
+              className="primary-action-btn analyze-btn-prominent"
               onClick={() => (mode === 'single' ? fetchSingleData(true) : fetchCompareData())}
               disabled={loading}
+              title="Query the World Bank API and compute evidence-based metrics"
             >
               <RefreshCw size={14} className={loading ? 'spin' : ''} />
-              <span>{loading ? 'Fetching World Bank...' : 'Update Data'}</span>
+              <span>{loading ? 'Analyzing World Bank Data...' : 'Analyze Data'}</span>
             </button>
           </div>
         </div>
@@ -1332,11 +1386,17 @@ export default function GlobalIntelligenceView({ onSelectCountryNode }) {
                       </td>
                       <td>
                         {obs.is_missing ? (
-                          <span className="status-badge missing">Missing Gap</span>
+                          <span className="status-badge missing" title="Isolated missing data gap — zero metric fabrication">
+                            <AlertCircle size={11} style={{ marginRight: 3, verticalAlign: 'middle' }} /> Missing Gap
+                          </span>
                         ) : obs.value === 0 ? (
-                          <span className="status-badge zero">Zero (0.0)</span>
+                          <span className="status-badge zero" title="Empirical zero observation">
+                            <CheckCircle2 size={11} style={{ marginRight: 3, verticalAlign: 'middle' }} /> Zero (0.0)
+                          </span>
                         ) : (
-                          <span className="status-badge verified">Verified</span>
+                          <span className="status-badge verified" title="Authoritative Source: World Bank API (v2) • Status: Verified">
+                            <ShieldCheck size={11} style={{ marginRight: 3, verticalAlign: 'middle' }} /> Verified
+                          </span>
                         )}
                       </td>
                       <td className="source-cell">{obs.source}</td>
@@ -1489,203 +1549,228 @@ export default function GlobalIntelligenceView({ onSelectCountryNode }) {
 
             {/* Modal Body */}
             <div className="ai-modal-scrollable">
-              {/* 1. Executive Synthesis */}
-              <div className="ai-synthesis-box">
-                <div className="ai-synthesis-label">
-                  <Sparkles size={14} /> Executive AI Synthesis
+              {/* 5 Plain-Language Core Questions */}
+              <div className="ai-questions-container" style={{ marginBottom: '20px' }}>
+                {/* 1. What changed? */}
+                <div className="ai-q-card">
+                  <div className="ai-q-header">
+                    <div className="ai-q-number">1</div>
+                    <h4>What changed?</h4>
+                  </div>
+                  <p className="ai-q-content">
+                    {aiAnalysis.analysis_scope === 'GLOBAL_COUNTRY_INTELLIGENCE'
+                      ? `${aiAnalysis.country?.name} experienced ${aiAnalysis.historical_trend?.direction || 'movement'} in ${aiAnalysis.indicator?.name}. Value shifted from ${aiAnalysis.historical_trend?.start_value} (${aiAnalysis.timeframe?.start_year}) to ${aiAnalysis.historical_trend?.end_value} (${aiAnalysis.timeframe?.end_year}), representing a ${aiAnalysis.historical_trend?.percentage_change !== null ? `${aiAnalysis.historical_trend?.percentage_change}% net change` : 'recorded movement'}.`
+                      : `Cross-country comparison of ${aiAnalysis.indicator?.name} revealed ${aiAnalysis.disparity_metrics?.top_country?.country_name} as top performer (${aiAnalysis.disparity_metrics?.top_country?.latest_value}) and ${aiAnalysis.disparity_metrics?.lowest_country?.country_name} at lowest (${aiAnalysis.disparity_metrics?.lowest_country?.latest_value}).`}
+                  </p>
                 </div>
-                <p className="ai-synthesis-text">{aiAnalysis.summary}</p>
+
+                {/* 2. What does it mean? */}
+                <div className="ai-q-card">
+                  <div className="ai-q-header">
+                    <div className="ai-q-number">2</div>
+                    <h4>What does it mean?</h4>
+                  </div>
+                  <p className="ai-q-content">{aiAnalysis.summary}</p>
+                </div>
+
+                {/* 3. What evidence supports this? */}
+                <div className="ai-q-card">
+                  <div className="ai-q-header">
+                    <div className="ai-q-number">3</div>
+                    <h4>What evidence supports this?</h4>
+                  </div>
+                  <div className="ai-q-content">
+                    <p style={{ margin: '0 0 6px' }}>Verified against official World Bank Development Indicators (API v2). Official Citations:</p>
+                    <ul style={{ margin: 0, paddingLeft: '18px', color: '#cbd5e1', fontSize: '12px' }}>
+                      {aiAnalysis.citations?.slice(0, 2).map((c, i) => (
+                        <li key={i}><strong>{c.claim}</strong> (Source: {c.source})</li>
+                      ))}
+                      {aiAnalysis.verified_facts?.slice(0, 2).map((f, i) => (
+                        <li key={i}>{f}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* 4. What data is missing? */}
+                <div className="ai-q-card">
+                  <div className="ai-q-header">
+                    <div className="ai-q-number">4</div>
+                    <h4>What data is missing?</h4>
+                  </div>
+                  <div className="ai-q-content">
+                    <ul style={{ margin: 0, paddingLeft: '18px', color: '#cbd5e1', fontSize: '12px' }}>
+                      {aiAnalysis.uncertainty_and_limitations?.map((lim, i) => (
+                        <li key={i}>{lim}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* 5. What should the user explore next? */}
+                <div className="ai-q-card">
+                  <div className="ai-q-header">
+                    <div className="ai-q-number">5</div>
+                    <h4>What should the user explore next?</h4>
+                  </div>
+                  <p className="ai-q-content">
+                    {aiAnalysis.analysis_scope === 'GLOBAL_COUNTRY_INTELLIGENCE'
+                      ? `Compare ${aiAnalysis.country?.name} with peer nations using Country Compare mode, or explore related indicators such as Population (SP.POP.TOTL) or Life Expectancy (SP.DYN.LE00.IN).`
+                      : `Drill into individual country series or inspect multi-hop macroeconomic relationships in the interactive Knowledge Graph.`}
+                  </p>
+                </div>
               </div>
 
-              {/* 2. Key Historical Metrics (Series mode) */}
-              {aiAnalysis.analysis_scope === 'GLOBAL_COUNTRY_INTELLIGENCE' && aiAnalysis.historical_trend && (
-                <div className="ai-metrics-grid">
-                  <div className="ai-metric-card">
-                    <span className="ai-metric-label">Trajectory Direction</span>
-                    <div
-                      className="ai-metric-value"
-                      style={{
-                        color:
-                          aiAnalysis.historical_trend.direction === 'Growth'
-                            ? '#64d7b2'
-                            : aiAnalysis.historical_trend.direction === 'Decline'
-                            ? '#f472b6'
-                            : '#f0bc78',
-                      }}
-                    >
-                      {aiAnalysis.historical_trend.direction}
-                    </div>
-                    <span className="ai-metric-sub">
-                      {aiAnalysis.timeframe?.start_year} to {aiAnalysis.timeframe?.end_year}
-                    </span>
-                  </div>
-
-                  <div className="ai-metric-card">
-                    <span className="ai-metric-label">Total Net Delta</span>
-                    <div className="ai-metric-value">
-                      {aiAnalysis.historical_trend.net_change > 0 ? '+' : ''}
-                      {aiAnalysis.historical_trend.net_change}
-                    </div>
-                    <span className="ai-metric-sub">{aiAnalysis.indicator?.unit}</span>
-                  </div>
-
-                  <div className="ai-metric-card">
-                    <span className="ai-metric-label">Percentage Change</span>
-                    <div
-                      className="ai-metric-value"
-                      style={{
-                        color: aiAnalysis.historical_trend.percentage_change >= 0 ? '#64d7b2' : '#f0bc78',
-                      }}
-                    >
-                      {aiAnalysis.historical_trend.percentage_change !== null
-                        ? `${aiAnalysis.historical_trend.percentage_change}%`
-                        : 'N/A'}
-                    </div>
-                    <span className="ai-metric-sub">Across verified span</span>
-                  </div>
-
-                  <div className="ai-metric-card">
-                    <span className="ai-metric-label">Historical CAGR</span>
-                    <div className="ai-metric-value">
-                      {aiAnalysis.historical_trend.cagr_percentage !== null
-                        ? `${aiAnalysis.historical_trend.cagr_percentage}%`
-                        : 'N/A'}
-                    </div>
-                    <span className="ai-metric-sub">Annual compounded rate</span>
-                  </div>
-                </div>
-              )}
-
-              {/* 2b. Disparity Metrics (Compare mode) */}
-              {aiAnalysis.analysis_scope === 'GLOBAL_CROSS_COUNTRY_COMPARISON' && aiAnalysis.disparity_metrics && (
-                <div className="ai-metrics-grid">
-                  <div className="ai-metric-card">
-                    <span className="ai-metric-label">Top Ranked Country</span>
-                    <div className="ai-metric-value" style={{ color: '#64d7b2' }}>
-                      {aiAnalysis.disparity_metrics.top_country?.country_name}
-                    </div>
-                    <span className="ai-metric-sub">
-                      {aiAnalysis.disparity_metrics.top_country?.latest_value !== undefined
-                        ? aiAnalysis.disparity_metrics.top_country?.latest_value?.toLocaleString()
-                        : 'N/A'}{' '}
-                      ({aiAnalysis.disparity_metrics.top_country?.latest_year})
-                    </span>
-                  </div>
-
-                  <div className="ai-metric-card">
-                    <span className="ai-metric-label">Lowest Ranked Country</span>
-                    <div className="ai-metric-value" style={{ color: '#f0bc78' }}>
-                      {aiAnalysis.disparity_metrics.lowest_country?.country_name}
-                    </div>
-                    <span className="ai-metric-sub">
-                      {aiAnalysis.disparity_metrics.lowest_country?.latest_value !== undefined
-                        ? aiAnalysis.disparity_metrics.lowest_country?.latest_value?.toLocaleString()
-                        : 'N/A'}{' '}
-                      ({aiAnalysis.disparity_metrics.lowest_country?.latest_year})
-                    </span>
-                  </div>
-
-                  <div className="ai-metric-card">
-                    <span className="ai-metric-label">Disparity Ratio</span>
-                    <div className="ai-metric-value" style={{ color: '#a18aff' }}>
-                      {aiAnalysis.disparity_metrics.disparity_ratio
-                        ? `${aiAnalysis.disparity_metrics.disparity_ratio}x`
-                        : 'N/A'}
-                    </div>
-                    <span className="ai-metric-sub">Highest vs Lowest spread</span>
-                  </div>
-                </div>
-              )}
-
-              {/* 3. Detected Anomalies & Volatility */}
-              {aiAnalysis.detected_anomalies && aiAnalysis.detected_anomalies.length > 0 && (
-                <div className="ai-section-box">
-                  <div className="ai-section-title">
-                    <AlertCircle size={15} color="#f0bc78" /> Detected Statistical Anomalies ({aiAnalysis.detected_anomalies.length})
-                  </div>
-                  {aiAnalysis.detected_anomalies.map((anom, idx) => (
-                    <div key={idx} className="ai-anomaly-card">
-                      <div className="ai-anomaly-header">
-                        <span className="ai-anomaly-title">
-                          Year {anom.year} · {anom.direction} Volatility
+              {/* Expandable Advanced Technical Details */}
+              <details className="advanced-ai-details" style={{ marginBottom: '16px' }}>
+                <summary>
+                  <span>Advanced Mathematical & Empirical Details (CAGR, Anomalies, Citations)</span>
+                  <ChevronDown size={14} className="details-chevron" />
+                </summary>
+                <div className="advanced-details-content" style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {/* 2. Key Historical Metrics (Series mode) */}
+                  {aiAnalysis.analysis_scope === 'GLOBAL_COUNTRY_INTELLIGENCE' && aiAnalysis.historical_trend && (
+                    <div className="ai-metrics-grid">
+                      <div className="ai-metric-card">
+                        <span className="ai-metric-label">Trajectory Direction</span>
+                        <div
+                          className="ai-metric-value"
+                          style={{
+                            color:
+                              aiAnalysis.historical_trend.direction === 'Growth'
+                                ? '#64d7b2'
+                                : aiAnalysis.historical_trend.direction === 'Decline'
+                                ? '#f472b6'
+                                : '#f0bc78',
+                          }}
+                        >
+                          {aiAnalysis.historical_trend.direction}
+                        </div>
+                        <span className="ai-metric-sub">
+                          {aiAnalysis.timeframe?.start_year} to {aiAnalysis.timeframe?.end_year}
                         </span>
-                        <span className="ai-anomaly-delta">{anom.year_over_year_change_pct}</span>
                       </div>
-                      <p className="ai-anomaly-desc">
-                        Value shifted from {anom.previous_value} ({anom.previous_year}) to {anom.value} ({anom.year}). {anom.context}
-                      </p>
+
+                      <div className="ai-metric-card">
+                        <span className="ai-metric-label">Total Net Delta</span>
+                        <div className="ai-metric-value">
+                          {aiAnalysis.historical_trend.net_change > 0 ? '+' : ''}
+                          {aiAnalysis.historical_trend.net_change}
+                        </div>
+                        <span className="ai-metric-sub">{aiAnalysis.indicator?.unit}</span>
+                      </div>
+
+                      <div className="ai-metric-card">
+                        <span className="ai-metric-label">Percentage Change</span>
+                        <div
+                          className="ai-metric-value"
+                          style={{
+                            color: aiAnalysis.historical_trend.percentage_change >= 0 ? '#64d7b2' : '#f0bc78',
+                          }}
+                        >
+                          {aiAnalysis.historical_trend.percentage_change !== null
+                            ? `${aiAnalysis.historical_trend.percentage_change}%`
+                            : 'N/A'}
+                        </div>
+                        <span className="ai-metric-sub">Across verified span</span>
+                      </div>
+
+                      <div className="ai-metric-card">
+                        <span className="ai-metric-label">Historical CAGR</span>
+                        <div className="ai-metric-value">
+                          {aiAnalysis.historical_trend.cagr_percentage !== null
+                            ? `${aiAnalysis.historical_trend.cagr_percentage}%`
+                            : 'N/A'}
+                        </div>
+                        <span className="ai-metric-sub">Annual compounded rate</span>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  )}
 
-              {/* 4. Verified Factual Claims & Citations */}
-              {aiAnalysis.citations && aiAnalysis.citations.length > 0 && (
-                <div className="ai-section-box">
-                  <div className="ai-section-title">
-                    <ShieldCheck size={15} color="#38bdf8" /> Factual Citations & Data Provenance
-                  </div>
-                  {aiAnalysis.citations.map((cite, idx) => (
-                    <div key={idx} className="ai-citation-card">
-                      <div className="ai-citation-claim">"{cite.claim}"</div>
-                      <div className="ai-citation-meta">
-                        <span>Source: <strong className="ai-citation-badge">{cite.source}</strong></span>
-                        {cite.source_id && <span>Source ID: {cite.source_id}</span>}
-                        {cite.indicator_code && <span>Indicator: {cite.indicator_code}</span>}
-                        {cite.last_updated && <span>Official Release: {cite.last_updated}</span>}
+                  {/* 2b. Disparity Metrics (Compare mode) */}
+                  {aiAnalysis.analysis_scope === 'GLOBAL_CROSS_COUNTRY_COMPARISON' && aiAnalysis.disparity_metrics && (
+                    <div className="ai-metrics-grid">
+                      <div className="ai-metric-card">
+                        <span className="ai-metric-label">Top Ranked Country</span>
+                        <div className="ai-metric-value" style={{ color: '#64d7b2' }}>
+                          {aiAnalysis.disparity_metrics.top_country?.country_name}
+                        </div>
+                        <span className="ai-metric-sub">
+                          {aiAnalysis.disparity_metrics.top_country?.latest_value !== undefined
+                            ? aiAnalysis.disparity_metrics.top_country?.latest_value?.toLocaleString()
+                            : 'N/A'}{' '}
+                          ({aiAnalysis.disparity_metrics.top_country?.latest_year})
+                        </span>
+                      </div>
+
+                      <div className="ai-metric-card">
+                        <span className="ai-metric-label">Lowest Ranked Country</span>
+                        <div className="ai-metric-value" style={{ color: '#f0bc78' }}>
+                          {aiAnalysis.disparity_metrics.lowest_country?.country_name}
+                        </div>
+                        <span className="ai-metric-sub">
+                          {aiAnalysis.disparity_metrics.lowest_country?.latest_value !== undefined
+                            ? aiAnalysis.disparity_metrics.lowest_country?.latest_value?.toLocaleString()
+                            : 'N/A'}{' '}
+                          ({aiAnalysis.disparity_metrics.lowest_country?.latest_year})
+                        </span>
+                      </div>
+
+                      <div className="ai-metric-card">
+                        <span className="ai-metric-label">Disparity Ratio</span>
+                        <div className="ai-metric-value" style={{ color: '#a18aff' }}>
+                          {aiAnalysis.disparity_metrics.disparity_ratio
+                            ? `${aiAnalysis.disparity_metrics.disparity_ratio}x`
+                            : 'N/A'}
+                        </div>
+                        <span className="ai-metric-sub">Highest vs Lowest spread</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  )}
 
-              {/* 5. Verified Facts List */}
-              {aiAnalysis.verified_facts && aiAnalysis.verified_facts.length > 0 && (
-                <div className="ai-section-box">
-                  <div className="ai-section-title">
-                    <CheckCircle2 size={15} color="#64d7b2" /> Verified Empirical Facts
-                  </div>
-                  <ul className="ai-fact-list">
-                    {aiAnalysis.verified_facts.map((fact, idx) => (
-                      <li key={idx}>{fact}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* 6. Uncertainty & Limitations */}
-              {aiAnalysis.uncertainty_and_limitations && aiAnalysis.uncertainty_and_limitations.length > 0 && (
-                <div className="ai-section-box">
-                  <div className="ai-section-title">
-                    <Info size={15} color="#f0bc78" /> Uncertainty & Data Limitations
-                  </div>
-                  <ul className="ai-limitations-list">
-                    {aiAnalysis.uncertainty_and_limitations.map((lim, idx) => (
-                      <li key={idx}>{lim}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* 7. Non-Guaranteed Analytical Scenarios */}
-              {aiAnalysis.analytical_scenarios && aiAnalysis.analytical_scenarios.length > 0 && (
-                <div className="ai-section-box">
-                  <div className="ai-section-title">
-                    <TrendingUp size={15} color="#a18aff" /> Bounded Analytical Scenarios (Conditional Projections)
-                  </div>
-                  <div className="ai-scenarios-grid">
-                    {aiAnalysis.analytical_scenarios.map((scen, idx) => (
-                      <div key={idx} className="ai-scenario-card">
-                        <div className="ai-scenario-name">{scen.scenario_name}</div>
-                        <div className="ai-scenario-val">{scen.estimated_value}</div>
-                        <div className="ai-scenario-meta">{scen.projection_horizon}</div>
-                        <div className="ai-scenario-meta" style={{ color: '#cbd5e1' }}>{scen.growth_assumption}</div>
-                        <span className="ai-scenario-confidence">{scen.confidence_level}</span>
+                  {/* Detected Anomalies */}
+                  {aiAnalysis.detected_anomalies && aiAnalysis.detected_anomalies.length > 0 && (
+                    <div className="ai-section-box">
+                      <div className="ai-section-title">
+                        <AlertCircle size={15} color="#f0bc78" /> Detected Statistical Anomalies ({aiAnalysis.detected_anomalies.length})
                       </div>
-                    ))}
-                  </div>
+                      {aiAnalysis.detected_anomalies.map((anom, idx) => (
+                        <div key={idx} className="ai-anomaly-card">
+                          <div className="ai-anomaly-header">
+                            <span className="ai-anomaly-title">
+                              Year {anom.year} · {anom.direction} Volatility
+                            </span>
+                            <span className="ai-anomaly-delta">{anom.year_over_year_change_pct}</span>
+                          </div>
+                          <p className="ai-anomaly-desc">
+                            Value shifted from {anom.previous_value} ({anom.previous_year}) to {anom.value} ({anom.year}). {anom.context}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Bounded Analytical Scenarios */}
+                  {aiAnalysis.analytical_scenarios && aiAnalysis.analytical_scenarios.length > 0 && (
+                    <div className="ai-section-box">
+                      <div className="ai-section-title">
+                        <TrendingUp size={15} color="#a18aff" /> Bounded Analytical Scenarios (Conditional Projections)
+                      </div>
+                      <div className="ai-scenarios-grid">
+                        {aiAnalysis.analytical_scenarios.map((scen, idx) => (
+                          <div key={idx} className="ai-scenario-card">
+                            <div className="ai-scenario-name">{scen.scenario_name}</div>
+                            <div className="ai-scenario-val">{scen.estimated_value}</div>
+                            <div className="ai-scenario-meta">{scen.projection_horizon}</div>
+                            <div className="ai-scenario-meta" style={{ color: '#cbd5e1' }}>{scen.growth_assumption}</div>
+                            <span className="ai-scenario-confidence">{scen.confidence_level}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </details>
 
               {/* 8. Mandatory Statistical Disclaimer */}
               {aiAnalysis.disclaimer && (

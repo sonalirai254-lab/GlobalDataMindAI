@@ -1,6 +1,38 @@
+# Dependencies
 node_modules/
-dist/
 .venv/
+venv/
+env/
+
+# Production builds
+dist/
+build/
+frontend/dist/
+
+# Python bytecode & cache
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Environment files and secrets (keep .env.example tracked)
 .env
-*.pyc
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+dump.rdb
+
+# System files
+.DS_Store
+Thumbs.db
+

@@ -44,8 +44,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 5
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2016": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2016",
@@ -60,8 +64,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 5
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2017": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2017",
@@ -76,8 +84,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 5
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2018": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2018",
@@ -92,8 +104,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 5
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2019": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2019",
@@ -108,8 +124,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 5
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2020": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2020",
@@ -124,8 +144,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 5
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2021": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2021",
@@ -140,8 +164,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 5
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2022": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2022",
@@ -156,8 +184,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 5
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_USA_NY_GDP_MKTP_CD_2020": {
     "id": "obs_USA_NY_GDP_MKTP_CD_2020",
@@ -173,7 +205,11 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-15T12:22:31Z",
-    "version": 3
+    "version": 3,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-15T12:22:31Z"
   },
   "obs_USA_NY_GDP_MKTP_CD_2021": {
     "id": "obs_USA_NY_GDP_MKTP_CD_2021",
@@ -189,7 +225,11 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-15T12:22:31Z",
-    "version": 3
+    "version": 3,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-15T12:22:31Z"
   },
   "obs_USA_NY_GDP_MKTP_CD_2022": {
     "id": "obs_USA_NY_GDP_MKTP_CD_2022",
@@ -205,7 +245,11 @@
     "source_id": "2",
     "last_updated": "2026-10-08",
     "retrieved_at": "2026-10-15T12:22:31Z",
-    "version": 3
+    "version": 3,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-15T12:22:31Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2000": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2000",
@@ -220,8 +264,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2001": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2001",
@@ -236,8 +284,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2002": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2002",
@@ -252,8 +304,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2003": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2003",
@@ -268,8 +324,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2004": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2004",
@@ -284,8 +344,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2005": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2005",
@@ -300,8 +364,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2006": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2006",
@@ -316,8 +384,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2007": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2007",
@@ -332,8 +404,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2008": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2008",
@@ -348,8 +424,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2009": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2009",
@@ -364,8 +444,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2010": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2010",
@@ -380,8 +464,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2011": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2011",
@@ -396,8 +484,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2012": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2012",
@@ -412,8 +504,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2013": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2013",
@@ -428,8 +524,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2014": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2014",
@@ -444,8 +544,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2023": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2023",
@@ -460,8 +564,12 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   },
   "obs_IND_NY_GDP_MKTP_CD_2024": {
     "id": "obs_IND_NY_GDP_MKTP_CD_2024",
@@ -476,7 +584,11 @@
     "source": "World Development Indicators (WDI)",
     "source_id": "2",
     "last_updated": "2026-10-08",
-    "retrieved_at": "2026-10-15T12:35:18Z",
-    "version": 4
+    "retrieved_at": "2026-10-18T13:28:43Z",
+    "version": 5,
+    "verification_status": "Verified",
+    "verification_method": "AUTHORITATIVE_SOURCE",
+    "verification_source": "World Development Indicators (WDI)",
+    "verification_timestamp": "2026-10-18T13:28:43Z"
   }
 }

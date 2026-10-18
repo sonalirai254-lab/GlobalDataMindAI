@@ -7,7 +7,7 @@ Bitemporal Distinctions:
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 from enum import Enum
 from pydantic import BaseModel, Field
 
@@ -29,6 +29,14 @@ class EntityKind(str, Enum):
     OBSERVATION = "Observation"
     ACADEMIC_RECORD = "AcademicRecord"
     PERSONAL_DATA = "PersonalData"
+
+
+class VerificationStatus(str, Enum):
+    PENDING = "Pending Verification"
+    IN_PROGRESS = "Verification In Progress"
+    VERIFIED = "Verified"
+    FAILED = "Verification Failed"
+    RE_VERIFICATION_REQUIRED = "Re-verification Required"
 
 
 class RelationType(str, Enum):
@@ -205,3 +213,69 @@ def validate_relation(src_kind: str, rel_type: str, tgt_kind: str) -> bool:
     if not allowed:
         return True  # Permissive fallback for custom semantic edges
     return any(s == src_kind and t == tgt_kind for s, t in allowed) or (src_kind == "Entity" or tgt_kind == "Entity")
+
+
+class VerificationRequestInput(BaseModel):
+    notes: Optional[str] = Field(default="", max_length=500, description="Optional notes or context for verification")
+    user_id: Optional[str] = Field(default="student_profile", description="Requesting candidate user ID")
+
+
+class VerificationReviewInput(BaseModel):
+    status: VerificationStatus = Field(description="New verification status")
+    reviewer_role: str = Field(default="reviewer", description="Role of reviewer (admin, registrar, reviewer)")
+    reviewer_name: str = Field(min_length=2, max_length=150, description="Name or identifier of reviewer")
+    method: str = Field(default="AUTHORIZED_REVIEWER", description="Verification method: AUTHORITATIVE_SOURCE, AUTHORIZED_REVIEWER, INSTITUTION_REGISTRY, MANUAL_REVIEW_REQUIRED")
+    source: str = Field(min_length=2, max_length=200, description="Verification source (e.g., CBSE Digital Portal, University Registrar)")
+    reason: Optional[str] = Field(default="", max_length=500, description="Reason for failure or requirements if not verified")
+    notes: Optional[str] = Field(default="", max_length=500, description="Additional audit or reviewer notes")
+
+
+class DocumentAttachmentInput(BaseModel):
+    name: str = Field(min_length=2, max_length=255, description="Document filename (e.g. Class_10_Marksheet.pdf)")
+    checksum: Optional[str] = Field(default="", max_length=64, description="Cryptographic SHA-256 checksum for tamper evidence")
+    document_id: Optional[str] = Field(default="", max_length=100, description="Optional referenced Document entity ID in knowledge graph")
+    file_type: Optional[str] = Field(default="transcript", description="Document type: transcript, degree_certificate, marksheet, migration_cert")
+
+
+VerificationRequestInput.model_rebuild()
+VerificationReviewInput.model_rebuild()
+DocumentAttachmentInput.model_rebuild()
+
+# ---------------- Universal Timestamp & Temporal Schemas ---------------- #
+
+class TemporalParseRequest(BaseModel):
+    timestamp_input: Optional[Any] = Field(default=None, description="Raw date/time string, numeric epoch, or year integer to normalize")
+    raw_val: Optional[Any] = Field(default=None, description="Alias for timestamp_input")
+    source_name: Optional[str] = Field(default="api_request", description="Source or file identifier")
+    source_created_at: Optional[Any] = Field(default=None, description="Optional raw timestamp of source document creation")
+    source_created_raw: Optional[Any] = Field(default=None, description="Alias for source_created_at")
+    verified_at: Optional[Any] = Field(default=None, description="Optional raw timestamp of verification completion")
+    verified_raw: Optional[Any] = Field(default=None, description="Alias for verified_at")
+    allow_inference: Optional[bool] = Field(default=False, description="Whether to allow documented inference if date is missing")
+
+
+class TemporalIngestRequest(BaseModel):
+    source_type: str = Field(default="JSON", description="Data format: JSON, CSV, LOG, DOCUMENT")
+    content: Any = Field(description="Raw payload string, list, or JSON object")
+    source_name: str = Field(default="uploaded_data", description="Source filename or origin identifier")
+
+
+class TemporalAnalyzeRequest(BaseModel):
+    records: Optional[list[dict[str, Any]]] = Field(default=None, description="Optional records to analyze. If omitted, analyzes existing graph entities.")
+    start_time: Optional[str] = Field(default=None, description="UTC start bound ISO 8601")
+    end_time: Optional[str] = Field(default=None, description="UTC end bound ISO 8601")
+    precision: Optional[str] = Field(default=None, description="Filter by precision: year, month, day, second, millisecond")
+    validation_status: Optional[str] = Field(default=None, description="Filter by status: VALID, MISSING, MALFORMED, CONFLICTING, IMPLAUSIBLE")
+    requires_review_only: Optional[bool] = Field(default=False, description="Filter only records flagged for operator review")
+    sort_order: Optional[str] = Field(default="asc", description="Chronological sorting: asc or desc")
+
+
+class TemporalWindowCompareRequest(BaseModel):
+    window_a_start: str = Field(description="UTC start bound for Window A")
+    window_a_end: str = Field(description="UTC end bound for Window A")
+    window_b_start: str = Field(description="UTC start bound for Window B")
+    window_b_end: str = Field(description="UTC end bound for Window B")
+    numeric_field: Optional[str] = Field(default=None, description="Optional numeric field in data to compare averages across windows")
+    source_type: Optional[str] = Field(default=None, description="Optional filter by source type")
+
+

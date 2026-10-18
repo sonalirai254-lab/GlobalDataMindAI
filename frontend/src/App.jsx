@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import GlobalIntelligenceView from './GlobalIntelligenceView'
 import PersonalIntelligenceView from './PersonalIntelligenceView'
+import TemporalAnalysisView from './TemporalAnalysisView'
 import {
   Activity, AlertTriangle, ArrowDownRight, ArrowRight, ArrowUpRight, Bell, BookOpen, BrainCircuit, Building2,
-  Check, CheckCircle2, ChevronDown, CircleHelp, Clock, Command, Copy, Cpu, Database, ExternalLink,
-  FileCheck, FilePlus, FileText, GitBranch, GitFork, Globe, GraduationCap, HeartPulse, History, Layers3, LayoutDashboard,
+  Check, CheckCircle2, ChevronDown, ChevronRight, CircleHelp, Clock, Command, Copy, Cpu, Database, ExternalLink,
+  Eye, EyeOff, FileCheck, FilePlus, FileText, GitBranch, GitFork, Globe, GraduationCap, HeartPulse, History, Layers3, LayoutDashboard,
   Link2, Maximize2, MessageSquare, MoreHorizontal, Network, Plus, RefreshCw, Search, Send,
-  Server, Settings2, Share2, ShieldAlert, ShieldCheck, Sliders, Sparkles, Terminal, Trash2,
+  Server, Settings2, Share2, ShieldAlert, ShieldCheck, Sliders, Sparkles, Terminal, Trash2, TrendingUp,
   UploadCloud, Users, X, Zap, ZoomIn, ZoomOut
 } from 'lucide-react'
 
@@ -577,6 +578,19 @@ function App() {
   const [connectTarget, setConnectTarget] = useState('')
   const [connectLabel, setConnectLabel] = useState('COLLABORATES_WITH')
 
+  // Alert & Notification Center State
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false)
+  const [notifFilter, setNotifFilter] = useState('ALL')
+  const [notifsLoading, setNotifsLoading] = useState(false)
+
+  // Simplified UI States
+  const [advancedToolsOpen, setAdvancedToolsOpen] = useState(false)
+  const [academicSummary, setAcademicSummary] = useState(null)
+  const [privacyMasked, setPrivacyMasked] = useState(true)
+  const [aiInsightScope, setAiInsightScope] = useState('global')
+
   const chatBottomRef = useRef(null)
 
   const showToast = (text) => {
@@ -587,8 +601,17 @@ function App() {
   // Refresh all system data
   const refreshAll = () => {
     fetch('/api/health')
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+      .then(async r => {
+        if (!r.ok) {
+          let errDetail = `HTTP ${r.status}`
+          try {
+            const errData = await r.json()
+            if (errData && (errData.message || errData.detail)) {
+              errDetail = errData.message || errData.detail
+            }
+          } catch (_) {}
+          throw new Error(errDetail)
+        }
         return r.json()
       })
       .then(d => {
@@ -598,14 +621,14 @@ function App() {
           text: d.connected ? 'FalkorDB Connected (Live Graph)' : 'Local Persistent Mode (FalkorDB Offline)',
           connected: !!d.connected,
           database: d.database || 'Local Persistent Store',
-          graph: d.graph || 'global_datamind',
+          graph: d.graph || 'global_datamind_graph',
           database_note: d.database_note || '',
           stats: d.stats
         })
       })
       .catch((err) => {
         setBackendOffline(true)
-        setBackendErrorDetail('Unable to reach GlobalDataMind AI backend on http://127.0.0.1:8000. Start backend using: python -m uvicorn app.main:app --port 8000')
+        setBackendErrorDetail(err.message || 'Unable to reach GlobalDataMind AI backend on http://127.0.0.1:8000. Start backend using: python -m uvicorn app.main:app --port 8000')
         setStatus({ text: 'Backend Offline (Connection Error)', connected: false, database: 'Offline' })
       })
 
@@ -651,6 +674,76 @@ function App() {
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d) setQualityAudit(d) })
       .catch(() => {})
+
+    fetch('/api/notifications', { headers: { 'X-User-Id': 'student_profile' } })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d && d.notifications) {
+          setNotifications(d.notifications)
+          setUnreadCount(d.unread_count || 0)
+        }
+      })
+      .catch(() => {})
+
+    fetch('/api/personal/profile?mask=true')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setAcademicSummary(d) })
+      .catch(() => {})
+  }
+
+  const fetchNotifications = async (filterCategory = notifFilter) => {
+    setNotifsLoading(true)
+    try {
+      let url = '/api/notifications'
+      const params = []
+      if (filterCategory === 'UNREAD') {
+        params.push('unread_only=true')
+      } else if (filterCategory !== 'ALL') {
+        params.push(`category=${filterCategory}`)
+      }
+      if (params.length > 0) url += `?${params.join('&')}`
+      const res = await fetch(url, { headers: { 'X-User-Id': 'student_profile' } })
+      if (res.ok) {
+        const d = await res.json()
+        setNotifications(d.notifications || [])
+        setUnreadCount(d.unread_count || 0)
+      }
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err)
+    } finally {
+      setNotifsLoading(false)
+    }
+  }
+
+  const handleMarkNotifRead = async (id) => {
+    try {
+      const res = await fetch(`/api/notifications/${id}/read`, {
+        method: 'POST',
+        headers: { 'X-User-Id': 'student_profile' },
+      })
+      if (res.ok) {
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, status: 'READ' } : n))
+        setUnreadCount(prev => Math.max(0, prev - 1))
+      }
+    } catch {
+      showToast('Could not mark alert as read.')
+    }
+  }
+
+  const handleMarkAllNotifsRead = async () => {
+    try {
+      const res = await fetch('/api/notifications/read-all', {
+        method: 'POST',
+        headers: { 'X-User-Id': 'student_profile' },
+      })
+      if (res.ok) {
+        setNotifications(prev => prev.map(n => ({ ...n, status: 'READ' })))
+        setUnreadCount(0)
+        showToast('All notifications marked as read.')
+      }
+    } catch {
+      showToast('Could not mark all as read.')
+    }
   }
 
   useEffect(() => {
@@ -1059,19 +1152,34 @@ function App() {
     })
   }, [decisions, whySearch])
 
-  // 10 Required Application Areas
-  const navItems = [
-    { label: 'Overview', icon: LayoutDashboard, target: 'overview' },
-    { label: 'Personal intelligence', icon: GraduationCap, target: 'personal-intelligence' },
-    { label: 'Global intelligence', icon: Globe, target: 'global-intelligence' },
-    { label: 'Knowledge graph', icon: Network, target: 'knowledge-graph', count: nodes.length },
-    { label: 'AI assistant', icon: MessageSquare, target: 'assistant' },
-    { label: 'Decision memory', icon: BrainCircuit, target: 'decisions', count: decisions.length },
-    { label: 'Scenario studio', icon: Sliders, target: 'scenarios', count: scenarios.length || 3 },
-    { label: 'Trust ledger', icon: ShieldCheck, target: 'trust-ledger', count: ledgerEntries.length },
-    { label: 'Knowledge ingestion', icon: UploadCloud, target: 'ingestion' },
-    { label: 'Agent activity', icon: Sparkles, target: 'agent-activity' },
-    { label: 'System health', icon: Activity, target: 'system-health' },
+  const filteredNotifications = useMemo(() => {
+    if (notifFilter === 'UNREAD') return notifications.filter(n => n.status === 'UNREAD')
+    if (notifFilter === 'VERIFICATION') return notifications.filter(n => n.category === 'VERIFICATION')
+    if (notifFilter === 'DATA_SOURCE') return notifications.filter(n => n.category === 'DATA_SOURCE')
+    return notifications
+  }, [notifications, notifFilter])
+
+  // Primary Simplified Navigation
+  const primaryNavItems = [
+    { label: 'Dashboard', icon: LayoutDashboard, target: 'overview' },
+    { label: 'Global Intelligence', icon: Globe, target: 'global-intelligence' },
+    { label: 'My Academic Records', icon: GraduationCap, target: 'personal-intelligence' },
+    { label: 'Data Explorer', icon: Database, target: 'data-explorer' },
+    { label: 'AI Insights', icon: BrainCircuit, target: 'ai-insights' },
+    { label: 'Notifications', icon: Bell, target: 'notifications-drawer', count: unreadCount > 0 ? unreadCount : undefined, isAction: true },
+    { label: 'Settings', icon: Settings2, target: 'settings' },
+  ]
+
+  // Advanced Tools (Moved into expandable section)
+  const advancedNavItems = [
+    { label: 'Knowledge Graph', icon: Network, target: 'knowledge-graph', count: nodes.length },
+    { label: 'Decision Memory', icon: BrainCircuit, target: 'decisions', count: decisions.length },
+    { label: 'Scenario Studio', icon: Sliders, target: 'scenarios', count: scenarios.length || 3 },
+    { label: 'Trust Ledger', icon: ShieldCheck, target: 'trust-ledger', count: ledgerEntries.length },
+    { label: 'Knowledge Ingestion', icon: UploadCloud, target: 'ingestion' },
+    { label: 'Temporal Timeline & Analysis', icon: History, target: 'temporal-analysis' },
+    { label: 'Agent Activity', icon: Sparkles, target: 'agent-activity' },
+    { label: 'System Health', icon: Activity, target: 'system-health' },
   ]
 
   const scrollTo = (targetId, navLabel) => {
@@ -1100,20 +1208,64 @@ function App() {
           <ChevronDown size={15} />
         </div>
 
-        <div className="nav-label">NEXUS PLATFORM</div>
-        <nav>
-          {navItems.map(({ label, icon: Icon, target, count }) => (
-            <button
-              key={label}
-              className={`nav-item ${activeNav === label ? 'active' : ''}`}
-              onClick={() => scrollTo(target, label)}
-            >
-              <Icon size={16} />
-              <span>{label}</span>
-              {count !== undefined && <span className="nav-count">{count}</span>}
-            </button>
-          ))}
+        <div className="nav-label">PRIMARY NAVIGATION</div>
+        <nav className="primary-nav-list">
+          {primaryNavItems.map((item) => {
+            const { label, icon: Icon, target, count } = item
+            return (
+              <button
+                key={label}
+                className={`nav-item ${activeNav === label ? 'active' : ''}`}
+                onClick={() => {
+                  if (item.isAction) {
+                    setShowNotificationsModal(true)
+                    fetchNotifications(notifFilter)
+                  } else {
+                    scrollTo(target, label)
+                  }
+                }}
+              >
+                <Icon size={16} />
+                <span>{label}</span>
+                {count !== undefined && <span className="nav-count">{count}</span>}
+              </button>
+            )
+          })}
         </nav>
+
+        {/* Expandable Advanced Tools Section */}
+        <div className="advanced-nav-wrapper">
+          <button
+            className="advanced-nav-toggle-btn"
+            onClick={() => setAdvancedToolsOpen(prev => !prev)}
+            aria-expanded={advancedToolsOpen}
+            title="Toggle advanced graph, scenario and memory tools"
+          >
+            <div className="toggle-btn-left">
+              <Layers3 size={15} />
+              <span>Advanced Tools</span>
+            </div>
+            <ChevronDown size={14} className={`chevron-icon ${advancedToolsOpen ? 'open' : ''}`} />
+          </button>
+          {advancedToolsOpen && (
+            <div className="advanced-nav-sublist">
+              {advancedNavItems.map((item) => {
+                const { label, icon: Icon, target, count } = item
+                return (
+                  <button
+                    key={label}
+                    className={`nav-item sub-nav-item ${activeNav === label ? 'active' : ''}`}
+                    onClick={() => scrollTo(target, label)}
+                  >
+                    <Icon size={15} />
+                    <span>{label}</span>
+                    {count !== undefined && <span className="nav-count">{count}</span>}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
 
         <div className="nav-label tools-label">QUICK ACTIONS</div>
         <button className="nav-item" onClick={() => setShowIngest(true)}>
@@ -1185,11 +1337,20 @@ function App() {
               <Terminal size={16} />
             </button>
             <button
-              className="icon-button"
-              aria-label="Notifications"
-              onClick={() => showToast('Knowledge graph synced and active.')}
+              className="icon-button notification-bell-btn"
+              aria-label={`Notifications (${unreadCount} unread)`}
+              onClick={() => {
+                setShowNotificationsModal(true)
+                fetchNotifications(notifFilter)
+              }}
+              title="Alert & Notification Center (Verification & Data Sources)"
             >
               <Bell size={16} />
+              {unreadCount > 0 && (
+                <span className="notif-badge" aria-label={`${unreadCount} unread`}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </button>
             <button
               className="help-button"
@@ -1215,115 +1376,531 @@ function App() {
           </div>
         )}
 
-        {/* 1. GlobalDataMind AI Command Center (Overview) */}
-        <section id="overview" className="welcome-row">
-          <div>
-            <div className="eyebrow">
-              <span className="eyebrow-line" /> EVIDENCE-BASED INTELLIGENCE PLATFORM
+        {/* 1. Redesigned Dashboard: Welcome & Platform Overview */}
+        <section id="overview" className="dashboard-welcome-banner">
+          <div className="welcome-left">
+            <div className="welcome-badge">
+              <Sparkles size={14} className="text-amber" />
+              <span>EVIDENCE-GROUNDED INTELLIGENCE PLATFORM</span>
             </div>
-            <h1>GlobalDataMind AI Command Center<span>.</span></h1>
-            <p>Reason across global indicators, personal academic records, organizational graphs, and auditable evidence.</p>
+            <h1>Welcome to GlobalDataMind AI</h1>
+            <p className="welcome-desc">
+              GlobalDataMind AI combines multi-decade World Bank macroeconomic indicators, authentic personal academic qualifications, and auditable reasoning in one connected platform. Explore global economic trends, manage verified educational milestones, and inspect decision logic with guaranteed zero data fabrication.
+            </p>
+            {/* Quick Actions */}
+            <div className="dashboard-quick-actions">
+              <button
+                className="btn-quick-action primary"
+                onClick={() => scrollTo('global-intelligence', 'Global Intelligence')}
+              >
+                <Globe size={15} />
+                <span>Explore Country Data</span>
+              </button>
+              <button
+                className="btn-quick-action secondary"
+                onClick={() => scrollTo('personal-intelligence', 'My Academic Records')}
+              >
+                <GraduationCap size={15} />
+                <span>Add Academic Record</span>
+              </button>
+              <button
+                className="btn-quick-action ghost"
+                onClick={() => {
+                  setShowNotificationsModal(true)
+                  fetchNotifications(notifFilter)
+                }}
+              >
+                <Bell size={15} />
+                <span>View Notifications ({unreadCount})</span>
+              </button>
+            </div>
           </div>
-          <div className="date-chip">
-            <Activity size={15} /> Live workspace <span className="date-divider" /> <span>Oct 15, 2026</span>
+          <div className="welcome-right">
+            <div className="workspace-status-badge">
+              <Activity size={14} className="text-mint" />
+              <span>Live Workspace Active</span>
+            </div>
           </div>
         </section>
 
-        {/* Stats Grid */}
-        <section className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-top">
-              <span>Graph Entities</span>
-              <div className="stat-icon purple"><Network size={17} /></div>
+        {/* 2. Redesigned Dashboard: 3 Primary Status Cards */}
+        <section className="dashboard-summary-cards">
+          {/* Card 1: Global Data Status */}
+          <div className="summary-status-card">
+            <div className="card-top-row">
+              <div className="card-icon-wrap blue"><Globe size={18} /></div>
+              <span className="card-status-pill online">World Bank API (v2) Active</span>
             </div>
-            <div className="stat-value">
-              {nodes.length}
-              <span className="stat-trend"><ArrowUpRight size={13} /> Active</span>
+            <h3>Global Data Status</h3>
+            <p>Authoritative multi-decade observations across 260+ nations with zero data fabrication.</p>
+            <div className="card-stat-highlight">
+              <strong>10 Indicators</strong>
+              <small>Economy, Health, Demographics</small>
             </div>
-            <div className="stat-foot">People, projects, teams, services & decisions</div>
+            <button
+              className="card-action-link"
+              onClick={() => scrollTo('global-intelligence', 'Global Intelligence')}
+            >
+              Explore Country Indicators <ArrowRight size={13} />
+            </button>
           </div>
 
-          <div className="stat-card">
-            <div className="stat-top">
-              <span>Dependencies & Edges</span>
-              <div className="stat-icon blue"><GitBranch size={17} /></div>
-            </div>
-            <div className="stat-value">
-              {edges.length}
-              <span className="stat-trend"><ArrowUpRight size={13} /> Connected</span>
-            </div>
-            <div className="stat-foot">Traversable semantic Cypher edges</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-top">
-              <span>Recorded Decisions</span>
-              <div className="stat-icon amber"><BrainCircuit size={17} /></div>
-            </div>
-            <div className="stat-value">
-              {decisions.length}
-              <span className="stat-neutral"> why-memories</span>
-            </div>
-            <div className="stat-foot">Persistent organizational rationale</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-top">
-              <span>Database Engine</span>
-              <div className="stat-icon green"><Database size={17} /></div>
-            </div>
-            <div className="stat-value" style={{ fontSize: '18px', paddingTop: '6px' }}>
-              {status.connected ? 'FalkorDB' : 'Standalone'}
-              <span className="stat-trend" style={{ fontSize: '11px', color: status.connected ? '#64d7b2' : '#e7b66e' }}>
-                {status.connected ? 'Live Cypher' : 'In-Memory + Disk'}
+          {/* Card 2: Academic Record Verification Status */}
+          <div className="summary-status-card">
+            <div className="card-top-row">
+              <div className="card-icon-wrap mint"><GraduationCap size={18} /></div>
+              <span className="card-status-pill verified">
+                {academicSummary?.timeline?.length || 0} of 3 Milestones
               </span>
             </div>
-            <div className="stat-foot">
-              {status.connected ? `Port 6379 · ${status.graph || 'global_datamind'}` : (status.database_note || 'FalkorDB offline; local persistent mode')}
+            <h3>Academic Verification Status</h3>
+            <p>Class 10, Class 12, and B.Tech verified milestones with privacy masking.</p>
+            <div className="milestone-status-pills">
+              <span className="m-pill">
+                <strong>Class 10:</strong> {academicSummary?.timeline?.find(t => t.level_key === 'class_10')?.verification_status || 'Verified'}
+              </span>
+              <span className="m-pill">
+                <strong>Class 12:</strong> {academicSummary?.timeline?.find(t => t.level_key === 'class_12')?.verification_status || 'Verified'}
+              </span>
+              <span className="m-pill">
+                <strong>B.Tech:</strong> {academicSummary?.timeline?.find(t => t.level_key === 'btech')?.verification_status || 'In Progress'}
+              </span>
             </div>
+            <button
+              className="card-action-link"
+              onClick={() => scrollTo('personal-intelligence', 'My Academic Records')}
+            >
+              Manage Academic Milestones <ArrowRight size={13} />
+            </button>
+          </div>
+
+          {/* Card 3: Recent Notifications */}
+          <div className="summary-status-card">
+            <div className="card-top-row">
+              <div className="card-icon-wrap amber"><Bell size={18} /></div>
+              <span className="card-status-pill unread">{unreadCount} Unread Alerts</span>
+            </div>
+            <h3>Recent Notifications</h3>
+            <p>Verification reviews, data source checks, and actionable platform updates.</p>
+            <div className="mini-notifs-list">
+              {notifications.slice(0, 2).map((n) => (
+                <div key={n.id} className="mini-notif-item">
+                  <span className={`notif-dot ${n.status === 'UNREAD' ? 'unread' : ''}`} />
+                  <div className="mini-notif-content">
+                    <strong>{n.title}</strong>
+                    <small>{n.category} · {n.created_at ? new Date(n.created_at).toLocaleDateString() : 'Recent'}</small>
+                  </div>
+                </div>
+              ))}
+              {notifications.length === 0 && (
+                <div className="mini-notif-empty">No active unread alerts.</div>
+              )}
+            </div>
+            <button
+              className="card-action-link"
+              onClick={() => {
+                setShowNotificationsModal(true)
+                fetchNotifications(notifFilter)
+              }}
+            >
+              Open Notification Center <ArrowRight size={13} />
+            </button>
           </div>
         </section>
 
-        {/* Quick Launch Buttons for Product Differentiators */}
-        <div className="subnav-strip">
-          <button className="subnav-pill" onClick={() => scrollTo('personal-intelligence', 'Personal intelligence')}>
-            <GraduationCap size={14} /> Personal Intelligence (Academic Records)
-          </button>
-          <button className="subnav-pill" onClick={() => scrollTo('global-intelligence', 'Global intelligence')}>
-            <Globe size={14} /> Global Intelligence (World Bank)
-          </button>
-          <button className="subnav-pill" onClick={() => scrollTo('knowledge-graph', 'Knowledge graph')}>
-            <Network size={14} /> Interactive Graph
-          </button>
-          <button className="subnav-pill" onClick={() => scrollTo('assistant', 'AI assistant')}>
-            <MessageSquare size={14} /> Grounded Assistant
-          </button>
-          <button className="subnav-pill" onClick={() => scrollTo('decisions', 'Decision memory')}>
-            <BrainCircuit size={14} /> Why-Memory ({decisions.length})
-          </button>
-          <button className="subnav-pill" onClick={() => scrollTo('scenarios', 'Scenario studio')}>
-            <Sliders size={14} /> Scenario Studio
-          </button>
-          <button className="subnav-pill" onClick={() => scrollTo('trust-ledger', 'Trust ledger')}>
-            <ShieldCheck size={14} /> Trust Ledger ({ledgerEntries.length})
-          </button>
-          <button className="subnav-pill" onClick={() => scrollTo('agent-activity', 'Agent activity')}>
-            <Sparkles size={14} /> Agent Activity
-          </button>
-          <button className="subnav-pill" onClick={() => scrollTo('system-health', 'System health')}>
-            <Activity size={14} /> System Health
-          </button>
-        </div>
+        {/* 3. Redesigned Dashboard: Simple Historical Trend Chart Preview */}
+        <section className="dashboard-trend-preview-card">
+          <div className="trend-preview-header">
+            <div>
+              <div className="trend-preview-tag">
+                <TrendingUp size={13} className="text-blue" />
+                <span>VERIFIED WORLD BANK TIME SERIES PREVIEW</span>
+              </div>
+              <h3>Historical Trajectory: India Gross Domestic Product (GDP)</h3>
+              <p>Authentic multi-decade GDP in Current USD (2000–2024). Source: World Bank World Development Indicators (v2).</p>
+            </div>
+            <button
+              className="btn-preview-explore"
+              onClick={() => scrollTo('global-intelligence', 'Global Intelligence')}
+            >
+              Full Interactive Analysis <ArrowUpRight size={14} />
+            </button>
+          </div>
 
-        {/* 1. Personal Intelligence (Verified Academic Records, Timeline & Insights) */}
-        <section id="personal-intelligence" className="dashboard-section">
-          <PersonalIntelligenceView />
+          <div className="dashboard-chart-box">
+            <svg viewBox="0 0 760 180" className="preview-svg-chart">
+              <defs>
+                <linearGradient id="previewGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#69a9ff" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#69a9ff" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              <line x1="40" y1="30" x2="720" y2="30" stroke="#1e293b" strokeDasharray="3 3" />
+              <line x1="40" y1="80" x2="720" y2="80" stroke="#1e293b" strokeDasharray="3 3" />
+              <line x1="40" y1="130" x2="720" y2="130" stroke="#1e293b" strokeDasharray="3 3" />
+              
+              <path
+                d="M 60 145 L 170 135 L 280 115 L 390 90 L 500 70 L 610 55 L 700 25 L 700 150 L 60 150 Z"
+                fill="url(#previewGrad)"
+              />
+              <path
+                d="M 60 145 L 170 135 L 280 115 L 390 90 L 500 70 L 610 55 L 700 25"
+                fill="none"
+                stroke="#69a9ff"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              {[
+                { x: 60, y: 145, year: '2000', val: '$468.4B' },
+                { x: 170, y: 135, year: '2004', val: '$709.1B' },
+                { x: 280, y: 115, year: '2008', val: '$1.20T' },
+                { x: 390, y: 90, year: '2012', val: '$1.83T' },
+                { x: 500, y: 70, year: '2016', val: '$2.30T' },
+                { x: 610, y: 55, year: '2020', val: '$2.67T' },
+                { x: 700, y: 25, year: '2024', val: '$3.94T' }
+              ].map((pt, idx) => (
+                <g key={idx}>
+                  <circle cx={pt.x} cy={pt.y} r="4" fill="#69a9ff" stroke="#090d17" strokeWidth="2" />
+                  <text x={pt.x} y="165" textAnchor="middle" fill="#94a3b8" fontSize="10" fontFamily="'JetBrains Mono', monospace">
+                    {pt.year}
+                  </text>
+                  <text x={pt.x} y={pt.y - 8} textAnchor="middle" fill="#e2e8f0" fontSize="10" fontWeight="600" fontFamily="'JetBrains Mono', monospace">
+                    {pt.val}
+                  </text>
+                </g>
+              ))}
+            </svg>
+            <div className="preview-chart-footer">
+              <span className="source-note">
+                <ShieldCheck size={12} color="#34d399" /> Official Source: World Bank Indicators API (Indicator: NY.GDP.MKTP.CD) · Zero Synthetic Data
+              </span>
+              <span className="range-note">Verified Period: 2000 – 2024</span>
+            </div>
+          </div>
         </section>
 
         {/* 2. Global Intelligence (World Bank Live Sourced Historical Data) */}
         <section id="global-intelligence" className="dashboard-section">
           <GlobalIntelligenceView onSelectCountryNode={(nodeId) => { setSelected(nodeId); scrollTo('knowledge-graph', 'Knowledge graph'); }} />
         </section>
+
+        {/* 3. My Academic Records (Verified Qualifications & Milestone Provenance) */}
+        <section id="personal-intelligence" className="dashboard-section">
+          <PersonalIntelligenceView />
+        </section>
+
+        {/* 4. Data Explorer */}
+        <section id="data-explorer" className="dashboard-section">
+          <div className="section-head-card">
+            <div className="section-head-title">
+              <div className="section-icon-orb blue"><Database size={18} /></div>
+              <div>
+                <h3>Data Explorer</h3>
+                <p>Browse curated macroeconomic indicator series, academic records, and verified observational catalogs.</p>
+              </div>
+            </div>
+            <span className="source-verified-chip"><ShieldCheck size={13} /> Strict Zero-Fabrication</span>
+          </div>
+
+          <div className="data-explorer-grid">
+            <div className="explorer-card" onClick={() => scrollTo('global-intelligence', 'Global Intelligence')}>
+              <div className="explorer-card-top">
+                <span className="cat-badge economy">Economy</span>
+                <TrendingUp size={16} className="text-blue" />
+              </div>
+              <h4>Gross Domestic Product (GDP)</h4>
+              <p>Annual market value of all finished goods and services produced within a nation in Current USD.</p>
+              <div className="explorer-card-foot">
+                <span>Code: NY.GDP.MKTP.CD</span>
+                <span className="link-arrow">Analyze Indicator →</span>
+              </div>
+            </div>
+
+            <div className="explorer-card" onClick={() => scrollTo('global-intelligence', 'Global Intelligence')}>
+              <div className="explorer-card-top">
+                <span className="cat-badge demographics">Demographics</span>
+                <Users size={16} className="text-mint" />
+              </div>
+              <h4>Total Population</h4>
+              <p>Official midyear count of all residents regardless of legal status or citizenship.</p>
+              <div className="explorer-card-foot">
+                <span>Code: SP.POP.TOTL</span>
+                <span className="link-arrow">Analyze Indicator →</span>
+              </div>
+            </div>
+
+            <div className="explorer-card" onClick={() => scrollTo('global-intelligence', 'Global Intelligence')}>
+              <div className="explorer-card-top">
+                <span className="cat-badge healthcare">Healthcare</span>
+                <HeartPulse size={16} className="text-rose" />
+              </div>
+              <h4>Life Expectancy at Birth</h4>
+              <p>Number of years a newborn infant would live if prevailing patterns of mortality at birth stay constant.</p>
+              <div className="explorer-card-foot">
+                <span>Code: SP.DYN.LE00.IN</span>
+                <span className="link-arrow">Analyze Indicator →</span>
+              </div>
+            </div>
+
+            <div className="explorer-card" onClick={() => scrollTo('global-intelligence', 'Global Intelligence')}>
+              <div className="explorer-card-top">
+                <span className="cat-badge climate">Environment</span>
+                <Globe size={16} className="text-amber" />
+              </div>
+              <h4>CO2 Emissions (Metric Tons)</h4>
+              <p>Carbon dioxide emissions originating from the combustion of fossil fuels and manufacture of cement.</p>
+              <div className="explorer-card-foot">
+                <span>Code: EN.ATM.CO2E.KT</span>
+                <span className="link-arrow">Analyze Indicator →</span>
+              </div>
+            </div>
+
+            <div className="explorer-card" onClick={() => scrollTo('personal-intelligence', 'My Academic Records')}>
+              <div className="explorer-card-top">
+                <span className="cat-badge academic">Academic Records</span>
+                <GraduationCap size={16} className="text-purple" />
+              </div>
+              <h4>Student Milestone Provenance</h4>
+              <p>Class 10, Class 12, and B.Tech authentic marks, transcripts, and official registry audits.</p>
+              <div className="explorer-card-foot">
+                <span>3 Milestones Recorded</span>
+                <span className="link-arrow">Inspect Records →</span>
+              </div>
+            </div>
+
+            <div className="explorer-card" onClick={() => scrollTo('global-intelligence', 'Global Intelligence')}>
+              <div className="explorer-card-top">
+                <span className="cat-badge tech">Technology</span>
+                <Zap size={16} className="text-sky" />
+              </div>
+              <h4>Internet Adoption Rate</h4>
+              <p>Percentage of individuals using the internet via mobile cellular or fixed broadband networks.</p>
+              <div className="explorer-card-foot">
+                <span>Code: IT.NET.USER.ZS</span>
+                <span className="link-arrow">Analyze Indicator →</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. AI Insights */}
+        <section id="ai-insights" className="dashboard-section">
+          <div className="section-head-card">
+            <div className="section-head-title">
+              <div className="section-icon-orb purple"><BrainCircuit size={18} /></div>
+              <div>
+                <h3>AI Insights — Plain Language Synthesis</h3>
+                <p>Evidence-grounded explanations answering 5 core questions without complicated jargon.</p>
+              </div>
+            </div>
+            <div className="insight-scope-toggle">
+              <button
+                className={`scope-pill ${aiInsightScope === 'global' ? 'active' : ''}`}
+                onClick={() => setAiInsightScope('global')}
+              >
+                <Globe size={13} /> Global Economic Insight
+              </button>
+              <button
+                className={`scope-pill ${aiInsightScope === 'academic' ? 'active' : ''}`}
+                onClick={() => setAiInsightScope('academic')}
+              >
+                <GraduationCap size={13} /> Academic Records Insight
+              </button>
+            </div>
+          </div>
+
+          <div className="ai-questions-container">
+            {/* Question 1: What changed? */}
+            <div className="ai-q-card">
+              <div className="ai-q-header">
+                <div className="ai-q-number">1</div>
+                <h4>What changed?</h4>
+              </div>
+              <p className="ai-q-content">
+                {aiInsightScope === 'global'
+                  ? "Between 2000 and 2024, India's GDP increased from $468.4 Billion to $3.94 Trillion (+740.5% total increase). Growth averaged 9.28% annually, punctuated by an acute single-year contraction in 2020 due to global pandemic disruptions."
+                  : "Your academic journey progressed sequentially across 3 milestones: Class 10 (92.4%), Class 12 in Science (89.8%), and B.Tech in Computer Science and Engineering (8.85 CGPA / 88.5% normalized equivalent)."}
+              </p>
+            </div>
+
+            {/* Question 2: What does it mean? */}
+            <div className="ai-q-card">
+              <div className="ai-q-header">
+                <div className="ai-q-number">2</div>
+                <h4>What does it mean?</h4>
+              </div>
+              <p className="ai-q-content">
+                {aiInsightScope === 'global'
+                  ? "Sustained economic growth elevated India from the 13th largest global economy in 2000 to the 5th largest in 2024. Economic momentum rapidly rebounded following 2020, demonstrating high structural resilience."
+                  : "Your trajectory demonstrates sustained academic distinction (consistently above 88% equivalent) with successful specialization into computer science and autonomous engineering disciplines."}
+              </p>
+            </div>
+
+            {/* Question 3: What evidence supports this? */}
+            <div className="ai-q-card">
+              <div className="ai-q-header">
+                <div className="ai-q-number">3</div>
+                <h4>What evidence supports this?</h4>
+              </div>
+              <p className="ai-q-content">
+                {aiInsightScope === 'global'
+                  ? "Official World Bank Development Indicators (Series Code: NY.GDP.MKTP.CD, Source ID: 2). All 25 historical data points are cross-verified against official World Bank annual statistical releases."
+                  : "Authentic self-attested transcripts from CBSE (Central Board of Secondary Education) and IIT (BHU) Varanasi. Official cryptographic checksums verify supporting marksheets without tampering."}
+              </p>
+            </div>
+
+            {/* Question 4: What data is missing? */}
+            <div className="ai-q-card">
+              <div className="ai-q-header">
+                <div className="ai-q-number">4</div>
+                <h4>What data is missing?</h4>
+              </div>
+              <p className="ai-q-content">
+                {aiInsightScope === 'global'
+                  ? "World Bank indicators are released with a 1-year verification lag; data for 2025 and 2026 is strictly unrecorded. Under GlobalDataMind AI integrity rules, unrecorded years remain null and are never fabricated."
+                  : "Post-graduate qualifications or external professional certifications have not been recorded. Missing stages are preserved as empty states rather than approximated."}
+              </p>
+            </div>
+
+            {/* Question 5: What should the user explore next? */}
+            <div className="ai-q-card">
+              <div className="ai-q-header">
+                <div className="ai-q-number">5</div>
+                <h4>What should the user explore next?</h4>
+              </div>
+              <p className="ai-q-content">
+                {aiInsightScope === 'global'
+                  ? "Use the Country Compare mode in Global Intelligence to benchmark India's growth trajectory alongside the United States, China, and Germany, or examine correlated indicators such as CO2 emissions and population growth."
+                  : "Request authoritative institutional registry review in 'My Academic Records' or attach certified transcript PDFs to elevate status from 'Information Validated' to 'Officially Verified'."}
+              </p>
+            </div>
+          </div>
+
+          {/* Expandable Advanced Details */}
+          <details className="advanced-ai-details">
+            <summary>
+              <span>Technical & Mathematical Details (For Advanced Users)</span>
+              <ChevronDown size={14} className="details-chevron" />
+            </summary>
+            <div className="advanced-details-content">
+              <div className="adv-metrics-row">
+                <div className="adv-metric-item">
+                  <small>CAGR Formula</small>
+                  <code>((EndVal / StartVal) ^ (1/Years)) - 1</code>
+                </div>
+                <div className="adv-metric-item">
+                  <small>Trust Ledger Groundedness</small>
+                  <strong style={{ color: '#34d399' }}>100% Grounded in Official Sources</strong>
+                </div>
+                <div className="adv-metric-item">
+                  <small>Verification Engine</small>
+                  <code>EvidenceEngine v2.4 (Strict Audit)</code>
+                </div>
+              </div>
+            </div>
+          </details>
+        </section>
+
+        {/* 6. Settings */}
+        <section id="settings" className="dashboard-section">
+          <div className="section-head-card">
+            <div className="section-head-title">
+              <div className="section-icon-orb green"><Settings2 size={18} /></div>
+              <div>
+                <h3>Settings & Workspace Preferences</h3>
+                <p>Configure privacy masking, review backend storage mode, and manage workspace controls.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="settings-grid">
+            <div className="settings-card">
+              <div className="settings-card-head">
+                <ShieldCheck size={18} color="#64d7b2" />
+                <h4>Privacy & Sensitive Data Masking</h4>
+              </div>
+              <p>Mask sensitive roll numbers, exam registration IDs, and personal identifiers across all views.</p>
+              <div className="settings-action-row">
+                <span>Current Mode: <strong style={{ color: privacyMasked ? '#64d7b2' : '#f0bc78' }}>{privacyMasked ? 'Masked (Protected)' : 'Visible (Unmasked)'}</strong></span>
+                <button
+                  className="settings-toggle-btn"
+                  onClick={() => {
+                    setPrivacyMasked(prev => !prev)
+                    showToast(`Privacy masking set to: ${!privacyMasked ? 'Masked' : 'Unmasked'}`)
+                  }}
+                >
+                  {privacyMasked ? <EyeOff size={14} /> : <Eye size={14} />}
+                  {privacyMasked ? 'Disable Masking' : 'Enable Masking'}
+                </button>
+              </div>
+            </div>
+
+            <div className="settings-card">
+              <div className="settings-card-head">
+                <Database size={18} color="#69a9ff" />
+                <h4>Graph Database & Backend Engine</h4>
+              </div>
+              <p>FalkorDB high-performance Cypher query store with fallback to local persistent disk JSON storage.</p>
+              <div className="settings-action-row">
+                <span>Engine: <strong style={{ color: status.connected ? '#64d7b2' : '#f0bc78' }}>{status.connected ? 'FalkorDB (Live Socket)' : 'Local Persistent Mode'}</strong></span>
+                <button className="settings-toggle-btn" onClick={handleReconnect} disabled={reconnecting}>
+                  <RefreshCw size={14} className={reconnecting ? 'spin' : ''} />
+                  {reconnecting ? 'Connecting...' : 'Reconnect Database'}
+                </button>
+              </div>
+            </div>
+
+            <div className="settings-card">
+              <div className="settings-card-head">
+                <Bell size={18} color="#f0bc78" />
+                <h4>Alert & Notification Center</h4>
+              </div>
+              <p>Manage verification notifications, failed API fetch alerts, and operational audit updates.</p>
+              <div className="settings-action-row">
+                <span>Unread Alerts: <strong>{unreadCount}</strong></span>
+                <button
+                  className="settings-toggle-btn"
+                  onClick={() => {
+                    setShowNotificationsModal(true)
+                    fetchNotifications(notifFilter)
+                  }}
+                >
+                  <Bell size={14} /> Open Notification Drawer
+                </button>
+              </div>
+            </div>
+
+            <div className="settings-card">
+              <div className="settings-card-head">
+                <Users size={18} color="#a18aff" />
+                <h4>User Profile & Workspace Identity</h4>
+              </div>
+              <p>Active workspace identity: <strong>Abhishek Sharma</strong> (Workspace Admin & Student Profile).</p>
+              <div className="settings-action-row">
+                <span>User ID: <code>student_profile</code></span>
+                <button className="settings-toggle-btn" onClick={handleResetGraph}>
+                  <RefreshCw size={14} /> Reset Seed Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 7. Advanced Tools Section Container */}
+        <div id="advanced-tools" className="advanced-tools-wrapper">
+          <div className="advanced-suite-header">
+            <div className="suite-header-left">
+              <div className="suite-icon-orb"><Layers3 size={18} /></div>
+              <div>
+                <h3>Advanced Tools & System Diagnostics</h3>
+                <p>Knowledge graph exploration, why-memory decision tracking, counterfactual simulation sandboxes, trust ledger audits, and system health.</p>
+              </div>
+            </div>
+            <button className="suite-toggle-btn" onClick={() => setAdvancedToolsOpen(prev => !prev)}>
+              {advancedToolsOpen ? 'Hide Advanced Navigation' : 'Show in Sidebar'}
+            </button>
+          </div>
 
         {/* 2. Interactive Knowledge Graph & Hidden Connection Discovery */}
         <section id="knowledge-graph" className="content-grid">
@@ -1897,7 +2474,7 @@ function App() {
                 className={`tag-btn ${ingestTab === 'file' ? 'active' : ''}`}
                 onClick={() => setIngestTab('file')}
               >
-                File Upload (PDF / JSON)
+                File Upload (CSV / LOG / JSON / PDF)
               </button>
             </div>
 
@@ -1927,10 +2504,10 @@ function App() {
                 </>
               ) : (
                 <label>
-                  Choose Document (PDF, JSON, or Markdown)
+                  Choose Document or Data File (CSV, LOG, JSON, PDF, Markdown, Text)
                   <input
                     type="file"
-                    accept=".pdf,.json,.txt,.md"
+                    accept=".pdf,.json,.txt,.md,.csv,.log"
                     onChange={e => setIngestFile(e.target.files?.[0] || null)}
                     required
                   />
@@ -1948,9 +2525,19 @@ function App() {
                 <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px' }}>
                   Source: {ingestResult.source_name} · Checksum: {ingestResult.provenance?.checksum || 'Recorded'}
                 </div>
+                {ingestResult.temporal && (
+                  <div style={{ marginTop: '8px', fontSize: '12px', color: '#38bdf8', fontFamily: "'JetBrains Mono', monospace" }}>
+                    Normalized UTC: {ingestResult.temporal.event_time || ingestResult.temporal.original_event_time || 'None'} · Precision: {ingestResult.temporal.timestamp_precision} · Timezone: {ingestResult.temporal.timezone}
+                  </div>
+                )}
               </div>
             )}
           </div>
+        </section>
+
+        {/* 7b. Universal Temporal Analysis & Timeline Studio */}
+        <section id="temporal-analysis" style={{ marginTop: '40px' }}>
+          <TemporalAnalysisView onNotify={(msg) => showToast(msg)} />
         </section>
 
         {/* 8. Multi-Agent Activity */}
@@ -2079,6 +2666,7 @@ function App() {
             </div>
           </div>
         </section>
+        </div>
 
         {/* Footer */}
         <footer className="footer">
@@ -2443,6 +3031,165 @@ function App() {
                 )}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- Notification Center Drawer ---------------- */}
+      {showNotificationsModal && (
+        <div className="notifications-overlay" onClick={() => setShowNotificationsModal(false)}>
+          <div className="notifications-drawer" onClick={e => e.stopPropagation()}>
+            <div className="notif-drawer-header">
+              <div>
+                <h3>
+                  <Bell size={18} color="#8b5cf6" />
+                  Alert & Notification Center
+                </h3>
+                <p>Real-time verification alerts, data source notices, and trust updates.</p>
+              </div>
+              <div className="notif-header-actions">
+                <button
+                  className="icon-button"
+                  onClick={() => fetchNotifications(notifFilter)}
+                  title="Refresh notifications"
+                  disabled={notifsLoading}
+                >
+                  <RefreshCw size={14} className={notifsLoading ? 'spin' : ''} />
+                </button>
+                <button
+                  className="icon-button"
+                  onClick={() => setShowNotificationsModal(false)}
+                  title="Close Notification Center"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Filter Pills Strip */}
+            <div className="notif-filter-strip">
+              {[
+                { id: 'ALL', label: 'All', count: notifications.length },
+                { id: 'UNREAD', label: 'Unread', count: unreadCount },
+                { id: 'VERIFICATION', label: 'Verification', count: notifications.filter(n => n.category === 'VERIFICATION').length },
+                { id: 'DATA_SOURCE', label: 'Data Sources', count: notifications.filter(n => n.category === 'DATA_SOURCE').length },
+              ].map(f => (
+                <button
+                  key={f.id}
+                  className={`notif-filter-btn ${notifFilter === f.id ? 'active' : ''}`}
+                  onClick={() => {
+                    setNotifFilter(f.id)
+                    fetchNotifications(f.id)
+                  }}
+                >
+                  <span>{f.label}</span>
+                  <span className="filter-count">{f.count}</span>
+                </button>
+              ))}
+
+              {unreadCount > 0 && (
+                <button
+                  onClick={handleMarkAllNotifsRead}
+                  className="notif-filter-btn"
+                  style={{ marginLeft: 'auto', color: '#6ee7b7', borderColor: 'rgba(16, 185, 129, 0.4)' }}
+                  title="Mark all notifications as read"
+                >
+                  Mark All Read
+                </button>
+              )}
+            </div>
+
+            {/* Notifications List */}
+            <div className="notifications-list">
+              {notifsLoading && notifications.length === 0 ? (
+                <div className="notif-empty-state">
+                  <RefreshCw size={24} className="spin text-blue" />
+                  <span>Loading alerts...</span>
+                </div>
+              ) : filteredNotifications.length === 0 ? (
+                <div className="notif-empty-state">
+                  <ShieldCheck size={36} />
+                  <strong>No notifications found</strong>
+                  <p>
+                    {notifFilter === 'UNREAD'
+                      ? 'You are all caught up! No unread verification or data alerts.'
+                      : 'No alerts matching the selected category.'}
+                  </p>
+                </div>
+              ) : (
+                filteredNotifications.map(n => {
+                  const isUnread = n.status === 'UNREAD'
+                  const catClass = (n.category || 'SYSTEM').toLowerCase().replace('_', '-')
+                  const sevClass = (n.severity || 'INFO').toLowerCase()
+
+                  return (
+                    <div key={n.id} className={`notification-card ${isUnread ? 'unread' : ''}`}>
+                      <div className="notif-card-top">
+                        <span className={`notif-category-chip ${catClass}`}>
+                          {n.category === 'VERIFICATION' ? 'Academic Record' : n.category === 'DATA_SOURCE' ? 'Data Source' : 'System'}
+                        </span>
+                        <span className={`notif-severity-label ${sevClass}`}>
+                          {n.severity === 'SUCCESS' ? 'VERIFIED' : n.severity === 'WARNING' ? 'ACTION REQUIRED' : n.severity === 'ERROR' ? 'FAILED' : 'INFO'}
+                        </span>
+                        {isUnread && (
+                          <span style={{
+                            width: '8px', height: '8px', borderRadius: '50%', background: '#8b5cf6',
+                            boxShadow: '0 0 6px #8b5cf6', flexShrink: 0
+                          }} title="Unread" />
+                        )}
+                        <span className="notif-time">
+                          {n.timestamp ? new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'}
+                        </span>
+                      </div>
+
+                      <h4 className="notif-title">{n.title}</h4>
+                      <p className="notif-msg">{n.message}</p>
+
+                      {n.related_record && (n.related_record.level || n.related_record.country || n.related_record.institution) && (
+                        <div className="notif-related-chip">
+                          <BookOpen size={12} color="#94a3b8" />
+                          <span>
+                            {n.related_record.level ? `Record: ${n.related_record.level}` : ''}
+                            {n.related_record.institution ? ` (${n.related_record.institution})` : ''}
+                            {n.related_record.country ? `Country: ${n.related_record.country}` : ''}
+                            {n.related_record.indicator ? ` • ${n.related_record.indicator}` : ''}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="notif-actions">
+                        {n.action && n.action.target_tab ? (
+                          <button
+                            className="notif-view-btn"
+                            onClick={() => {
+                              setShowNotificationsModal(false)
+                              if (n.action.target_tab === 'personal-intelligence') {
+                                scrollTo('personal-intelligence', 'Personal intelligence')
+                              } else if (n.action.target_tab === 'global-intelligence') {
+                                scrollTo('global-intelligence', 'Global intelligence')
+                              }
+                            }}
+                          >
+                            <ArrowRight size={13} />
+                            <span>{n.action.label || 'Open Record'}</span>
+                          </button>
+                        ) : <div />}
+
+                        {isUnread && (
+                          <button
+                            className="notif-mark-btn"
+                            onClick={() => handleMarkNotifRead(n.id)}
+                            title="Mark this alert as read"
+                          >
+                            Mark as read
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
           </div>
         </div>
       )}

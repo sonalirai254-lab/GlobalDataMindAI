@@ -12,7 +12,16 @@ export default defineConfig(({ mode }) => {
     ...process.env,
   }
   // Use 127.0.0.1 to avoid Windows Node.js IPv6 localhost (::1) ECONNREFUSED issues
-  const backendTarget = env.BACKEND_URL || env.VITE_API_URL || 'http://127.0.0.1:8000'
+  const defaultPort = env.PORT || env.BACKEND_PORT || '8000'
+  const backendTarget = env.BACKEND_URL || env.VITE_API_URL || `http://127.0.0.1:${defaultPort}`
+
+  let configuredPort = '8000'
+  try {
+    const url = new URL(backendTarget)
+    configuredPort = url.port || (url.protocol === 'https:' ? '443' : '80')
+  } catch (_) {
+    configuredPort = defaultPort
+  }
 
   return {
     plugins: [react()],
@@ -31,7 +40,7 @@ export default defineConfig(({ mode }) => {
                 res.writeHead(503, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({
                   error: 'Backend API unavailable',
-                  message: 'The Graphwise Nexus backend is offline or starting up. Ensure uvicorn is running on port 8000.',
+                  message: `The GlobalDataMind AI backend is offline or starting up. Ensure uvicorn is running on port ${configuredPort}.`,
                   detail: err.message,
                   status: 'backend_offline'
                 }));

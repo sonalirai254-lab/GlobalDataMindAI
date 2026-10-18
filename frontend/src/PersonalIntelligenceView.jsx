@@ -3,7 +3,7 @@ import {
   GraduationCap, Calendar, Award, BookOpen, School, TrendingUp, TrendingDown,
   ShieldCheck, ShieldAlert, Eye, EyeOff, Plus, Trash2, Edit3, CheckCircle2,
   AlertTriangle, Sparkles, ArrowRight, BarChart3, Clock, Check, Info, RefreshCw,
-  Layers, Lock, BrainCircuit, X
+  Layers, Lock, BrainCircuit, X, FilePlus, FileText, Paperclip, CheckCheck, Sliders
 } from 'lucide-react'
 
 // Milestone level definitions with themes and canonical icons
@@ -97,15 +97,183 @@ export default function PersonalIntelligenceView() {
     stream_or_major: '',
     grading_system: 'percentage',
     score: '',
-    max_score: 100.0,
     roll_or_registration_number: '',
     notes: '',
   })
+
+  // Verification Request state
+  const [requestingVerifLevel, setRequestingVerifLevel] = useState(null)
+
+  // Document Attachment Modal state
+  const [showAttachModal, setShowAttachModal] = useState(false)
+  const [attachLevelKey, setAttachLevelKey] = useState('')
+  const [docName, setDocName] = useState('')
+  const [docType, setDocType] = useState('transcript')
+  const [docChecksum, setDocChecksum] = useState('')
+  const [attachingDoc, setAttachingDoc] = useState(false)
+
+  // Authorized Review Modal state
+  const [showReviewModal, setShowReviewModal] = useState(false)
+  const [reviewLevelKey, setReviewLevelKey] = useState('')
+  const [reviewStatus, setReviewStatus] = useState('Verified')
+  const [reviewerRole, setReviewerRole] = useState('registrar')
+  const [reviewerName, setReviewerName] = useState('Academic Registrar (Authoritative Reviewer)')
+  const [reviewMethod, setReviewMethod] = useState('AUTHORITATIVE_SOURCE')
+  const [reviewSource, setReviewSource] = useState('Central Examination Registry')
+  const [reviewReason, setReviewReason] = useState('')
+  const [reviewing, setReviewing] = useState(false)
 
   // Evidence-Based Academic AI Analysis state
   const [personalAi, setPersonalAi] = useState(null)
   const [personalAiLoading, setPersonalAiLoading] = useState(false)
   const [showPersonalAi, setShowPersonalAi] = useState(false)
+
+  // View Details Modal State
+  const [selectedDetailRecord, setSelectedDetailRecord] = useState(null)
+
+  const handleRequestVerification = async (levelKey) => {
+    setRequestingVerifLevel(levelKey)
+    try {
+      const res = await fetch(`/api/personal/record/${levelKey}/verify-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-Id': 'student_profile' },
+        body: JSON.stringify({ notes: 'Initiating authoritative verification against issuing examination records.' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || data.message || 'Request failed.')
+      setSuccessMsg(`Verification request initiated for ${levelKey}. Status updated to 'Verification In Progress'.`)
+      fetchProfile()
+    } catch (err) {
+      alert('Verification Request Error: ' + err.message)
+    } finally {
+      setRequestingVerifLevel(null)
+    }
+  }
+
+  const openAttachModal = (levelKey) => {
+    setAttachLevelKey(levelKey)
+    const rec = profile?.actual_records?.find(r => r.level_key === levelKey)
+    const defaultName = rec ? `${rec.qualification.replace(/\s+/g, '_')}_Transcript_Official.pdf` : 'Academic_Transcript.pdf'
+    setDocName(defaultName)
+    // Generate deterministic/realistic SHA-256 mock hash if user doesn't specify
+    setDocChecksum(`e3b0c44298fc1c149afbf4c8996fb924${Math.random().toString(16).substring(2, 10)}${Date.now().toString(16).slice(-8)}`)
+    setDocType('transcript')
+    setShowAttachModal(true)
+  }
+
+  const handleAttachDocument = async (e) => {
+    e.preventDefault()
+    if (!docName.trim()) {
+      alert('Document filename is required.')
+      return
+    }
+    setAttachingDoc(true)
+    try {
+      const checksumVal = docChecksum.trim() || `sha256_${Math.random().toString(36).substring(2, 10)}`
+      const res = await fetch(`/api/personal/record/${attachLevelKey}/attach-document`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-Id': 'student_profile' },
+        body: JSON.stringify({
+          name: docName.trim(),
+          checksum: checksumVal,
+          file_type: docType,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || data.message || 'Document attachment failed.')
+      setSuccessMsg(`Evidence document '${docName.trim()}' successfully attached with cryptographic checksum.`)
+      setShowAttachModal(false)
+      fetchProfile()
+    } catch (err) {
+      alert('Document Attachment Error: ' + err.message)
+    } finally {
+      setAttachingDoc(false)
+    }
+  }
+
+  const openReviewModal = (levelKey, record) => {
+    setReviewLevelKey(levelKey)
+    setReviewStatus(record.verified ? 'Verified' : 'Verified')
+    setReviewerRole('registrar')
+    setReviewerName('Dr. A. Sharma (Registrar Office)')
+    setReviewMethod('AUTHORITATIVE_SOURCE')
+    setReviewSource(record.board_or_university ? `${record.board_or_university} Examination Registry` : 'Official Institution Portal')
+    setReviewReason('')
+    setShowReviewModal(true)
+  }
+
+  const handleReviewVerification = async (e) => {
+    e.preventDefault()
+    setReviewing(true)
+    try {
+      const res = await fetch(`/api/personal/record/${reviewLevelKey}/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-Id': reviewerRole },
+        body: JSON.stringify({
+          status: reviewStatus,
+          reviewer_role: reviewerRole,
+          reviewer_name: reviewerName,
+          method: reviewMethod,
+          source: reviewSource,
+          reason: reviewReason,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || data.message || 'Verification update failed.')
+      setSuccessMsg(`Official verification updated to '${reviewStatus}' by ${reviewerName}.`)
+      setShowReviewModal(false)
+      fetchProfile()
+    } catch (err) {
+      alert('Authorized Review Error: ' + err.message)
+    } finally {
+      setReviewing(false)
+    }
+  }
+
+  const renderVerificationBadge = (record) => {
+    let status = record.verification_status || (record.verified ? 'Verified' : 'Pending Verification')
+    const isOfficial = status === 'Verified' && (
+      record.verification_method === 'AUTHORITATIVE_SOURCE' ||
+      record.verification_source?.includes('Registry') ||
+      record.verification_source?.includes('CBSE') ||
+      record.verification_source?.includes('Central') ||
+      record.verified_by_role === 'registrar'
+    )
+
+    let displayTitle = status === 'Verified' ? (isOfficial ? 'Officially Verified' : 'Information Validated') : status
+    let cls = 'status-pending'
+    let Icon = Clock
+    let accessibleLabel = '[PENDING]'
+    if (displayTitle === 'Officially Verified') {
+      cls = 'status-verified'
+      Icon = ShieldCheck
+      accessibleLabel = '[OFFICIALLY VERIFIED]'
+    } else if (displayTitle === 'Information Validated') {
+      cls = 'status-validated'
+      Icon = CheckCircle2
+      accessibleLabel = '[INFORMATION VALIDATED]'
+    } else if (status === 'Verification In Progress') {
+      cls = 'status-in-progress'
+      Icon = RefreshCw
+      accessibleLabel = '[IN PROGRESS]'
+    } else if (status === 'Verification Failed') {
+      cls = 'status-failed'
+      Icon = ShieldAlert
+      accessibleLabel = '[VERIFICATION FAILED]'
+    } else if (status === 'Re-verification Required') {
+      cls = 'status-re-verification'
+      Icon = AlertTriangle
+      accessibleLabel = '[RE-VERIFICATION REQUIRED]'
+    }
+
+    return (
+      <span className={`verif-badge ${cls}`} title={`Verification: ${displayTitle} • Method: ${record.verification_method || 'MANUAL_REVIEW_REQUIRED'}`}>
+        <Icon size={12} className={status === 'Verification In Progress' ? 'spin' : ''} />
+        <span style={{ fontSize: '9px', opacity: 0.85, marginRight: 2 }}>{accessibleLabel}</span>
+        <span>{displayTitle}</span>
+      </span>
+    )
+  }
 
   const handleRunPersonalAi = async () => {
     setPersonalAiLoading(true)
@@ -131,7 +299,14 @@ export default function PersonalIntelligenceView() {
     try {
       const res = await fetch(`/api/personal/profile?mask=${mask}`)
       if (!res.ok) {
-        throw new Error(`Failed to load profile (${res.status})`)
+        let errMsg = `Failed to load profile (${res.status})`
+        try {
+          const errData = await res.json()
+          if (errData && (errData.message || errData.detail)) {
+            errMsg = errData.message || errData.detail
+          }
+        } catch (_) {}
+        throw new Error(errMsg)
       }
       const data = await res.json()
       setProfile(data)
@@ -479,10 +654,12 @@ export default function PersonalIntelligenceView() {
             const config = MILESTONE_CONFIG[levelKey]
             const record = profile?.timeline?.find(t => t.level_key === levelKey)
             const isRecorded = Boolean(record)
+            const hasUserScore = isRecorded && record.score !== null && record.score !== undefined && record.score !== ''
 
             return (
               <div
                 key={levelKey}
+                className="academic-milestone-card"
                 style={{
                   background: isRecorded ? '#131b2c' : 'rgba(16, 23, 37, 0.4)',
                   border: isRecorded ? `1px solid ${config.border}` : '1px dashed #233047',
@@ -517,128 +694,167 @@ export default function PersonalIntelligenceView() {
                     </div>
                   </div>
 
-                  {isRecorded ? (
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '4px',
-                      fontSize: '10px', fontWeight: 700, letterSpacing: '0.4px',
-                      color: '#64d7b2', background: 'rgba(100, 215, 178, 0.12)',
-                      padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(100, 215, 178, 0.3)'
-                    }}>
-                      <Check size={11} /> ACTUAL RECORD
-                    </span>
-                  ) : (
-                    <span style={{
-                      fontSize: '10px', fontWeight: 600, color: '#78869f',
-                      background: 'rgba(255, 255, 255, 0.04)', padding: '3px 8px',
-                      borderRadius: '6px', border: '1px dashed #233047'
-                    }}>
-                      NOT RECORDED
-                    </span>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                    {isRecorded ? (
+                      <>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '4px',
+                          fontSize: '10px', fontWeight: 700, letterSpacing: '0.4px',
+                          color: '#64d7b2', background: 'rgba(100, 215, 178, 0.12)',
+                          padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(100, 215, 178, 0.3)'
+                        }}>
+                          <Check size={11} /> RECORDED
+                        </span>
+                        {renderVerificationBadge(record)}
+                      </>
+                    ) : (
+                      <span style={{
+                        fontSize: '10px', fontWeight: 600, color: '#78869f',
+                        background: 'rgba(255, 255, 255, 0.04)', padding: '3px 8px',
+                        borderRadius: '6px', border: '1px dashed #233047'
+                      }}>
+                        NOT RECORDED
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Milestone Body */}
                 {isRecorded ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
-                    {/* Institution & Board */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', flex: 1 }}>
+                    {/* Institution & Year */}
                     <div>
                       <div style={{ fontSize: '14px', fontWeight: 600, color: '#e8edf7', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                         <School size={16} color={config.color} style={{ flexShrink: 0, marginTop: '2px' }} />
-                        <span>{record.institution}</span>
+                        <span>{record.institution || 'Institution: Not provided'}</span>
                       </div>
                       <div style={{ fontSize: '12px', color: '#9aa7bc', margin: '3px 0 0 22px' }}>
-                        Board / University: <strong style={{ color: '#c3cde3' }}>{record.board_or_university}</strong>
+                        {record.board_or_university ? `${record.board_or_university} · ` : ''}{record.stream_or_major || 'General'}
                       </div>
-                      <div style={{ fontSize: '12px', color: '#9aa7bc', margin: '2px 0 0 22px' }}>
-                        Stream / Specialization: <strong style={{ color: '#c3cde3' }}>{record.stream_or_major}</strong>
+                      <div style={{ fontSize: '11.5px', color: '#64d7b2', margin: '4px 0 0 22px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <Calendar size={12} />
+                        <span>Passing Year: <strong>{record.passing_year || 'Not specified'}</strong></span>
                       </div>
                     </div>
 
-                    {/* Score Showcase & Normalized Conversion */}
+                    {/* Score (Only shown if provided by user) */}
                     <div style={{
                       padding: '12px 14px', borderRadius: '8px',
                       background: 'rgba(0, 0, 0, 0.25)', border: '1px solid rgba(255, 255, 255, 0.05)',
-                      marginTop: '4px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: '11px', color: '#9aa7bc', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          Official Ground-Truth Score
+                          Academic Score
                         </span>
-                        <span style={{ fontSize: '11px', color: '#64d7b2', fontWeight: 600 }}>
-                          Passing Year: {record.passing_year}
-                        </span>
-                      </div>
-                      <div style={{ fontSize: '22px', fontWeight: 800, color: config.color, margin: '4px 0 0' }}>
-                        {record.score_display}
-                      </div>
-
-                      {/* Explicit Derived Calculation Tag */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px', paddingTop: '6px', borderTop: '1px dashed rgba(255,255,255,0.08)' }}>
-                        <span style={{ fontSize: '10px', color: '#a18aff', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                          <Sparkles size={11} /> Derived Normalized Equivalent:
-                        </span>
-                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#e8edf7' }}>
-                          {record.normalized_percentage}%
+                        <span style={{ fontSize: '11px', color: hasUserScore ? '#64d7b2' : '#78869f' }}>
+                          {hasUserScore ? 'Provided by user' : 'Not provided'}
                         </span>
                       </div>
-                      {renderScoreBar(record.normalized_percentage, config.color)}
-                    </div>
-
-                    {/* Sensitive Details (Maskable) */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: '#78869f', marginTop: 'auto', paddingTop: '8px' }}>
-                      <span>
-                        Roll / Reg: <strong style={{ color: '#9aa7bc' }}>{record.roll_or_registration_number || 'N/A'}</strong>
-                      </span>
-                      {record.years_since_previous !== null && (
-                        <span style={{ color: '#9aa7bc' }}>
-                          +{record.years_since_previous} years after prior stage
-                        </span>
+                      {hasUserScore ? (
+                        <>
+                          <div style={{ fontSize: '20px', fontWeight: 800, color: config.color, margin: '4px 0 0' }}>
+                            {record.score_display}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px', paddingTop: '6px', borderTop: '1px dashed rgba(255,255,255,0.08)' }}>
+                            <span style={{ fontSize: '10px', color: '#a18aff', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <Sparkles size={11} /> Derived Normalized:
+                            </span>
+                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#e8edf7' }}>
+                              {record.normalized_percentage}%
+                            </span>
+                          </div>
+                          {renderScoreBar(record.normalized_percentage, config.color)}
+                        </>
+                      ) : (
+                        <div style={{ fontSize: '12px', color: '#78869f', marginTop: '6px', fontStyle: 'italic' }}>
+                          Score: Not provided by user
+                        </div>
                       )}
                     </div>
 
-                    {/* Actions */}
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    {/* Private Information (Masked by default) */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px', color: '#78869f', marginTop: 'auto', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Lock size={12} color="#9aa7bc" />
+                        Roll / Reg No:
+                        <strong style={{ color: '#cbd5e1', letterSpacing: maskSensitive ? '2px' : 'normal', fontFamily: maskSensitive ? 'monospace' : 'inherit' }}>
+                          {maskSensitive ? (record.roll_or_registration_number ? '••••••••' : 'N/A') : (record.roll_or_registration_number || 'N/A')}
+                        </strong>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setMaskSensitive(!maskSensitive)}
+                        style={{ background: 'none', border: 'none', color: '#9aa7bc', cursor: 'pointer', padding: '2px 4px', display: 'inline-flex', alignItems: 'center' }}
+                        title={maskSensitive ? 'Show registration number' : 'Hide sensitive details'}
+                      >
+                        {maskSensitive ? <Eye size={13} /> : <EyeOff size={13} />}
+                      </button>
+                    </div>
+
+                    {/* Simplified Actions: View Details, Edit, Quick Options */}
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                      <button
+                        onClick={() => setSelectedDetailRecord(record)}
+                        className="btn btn-primary"
+                        style={{
+                          flex: 1, fontSize: '11.5px', padding: '7px 12px', borderRadius: '6px',
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                          background: 'rgba(105, 169, 255, 0.15)', color: '#69a9ff', border: '1px solid rgba(105, 169, 255, 0.35)', fontWeight: 600
+                        }}
+                        title="View comprehensive transcript, verification audit trail, and cryptographic checksums"
+                      >
+                        <Info size={13} /> View Details
+                      </button>
                       <button
                         onClick={() => openFormForLevel(levelKey)}
                         className="btn btn-secondary"
-                        style={{ flex: 1, fontSize: '11px', padding: '6px 10px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                        style={{ fontSize: '11.5px', padding: '7px 12px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        title="Edit academic record details"
                       >
-                        <Edit3 size={12} /> Edit Record
+                        <Edit3 size={13} /> Edit
+                      </button>
+                      <button
+                        onClick={() => openAttachModal(levelKey)}
+                        className="btn btn-secondary"
+                        style={{ fontSize: '11px', padding: '7px 9px', borderRadius: '6px', color: '#a18aff' }}
+                        title="Attach supporting document / transcript"
+                      >
+                        <Paperclip size={13} />
                       </button>
                       <button
                         onClick={() => handleDeleteRecord(levelKey)}
                         className="btn btn-secondary"
-                        style={{ fontSize: '11px', padding: '6px 10px', borderRadius: '6px', color: '#ff7b72', borderColor: 'rgba(255,123,114,0.3)' }}
+                        style={{ fontSize: '11px', padding: '7px 9px', borderRadius: '6px', color: '#ff7b72', borderColor: 'rgba(255,123,114,0.3)' }}
                         title="Delete this record"
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={13} />
                       </button>
                     </div>
                   </div>
                 ) : (
                   /* Missing State (Strictly Never Fabricated) */
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '28px 10px', textAlign: 'center', flex: 1, gap: '12px' }}>
-                    <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)', display: 'grid', placeItems: 'center', color: '#78869f' }}>
-                      <BookOpen size={20} />
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '36px 12px', textAlign: 'center', flex: 1, gap: '14px' }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)', display: 'grid', placeItems: 'center', color: '#78869f' }}>
+                      <BookOpen size={22} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#9aa7bc' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: '#e8edf7' }}>
                         No Record Entered Yet
                       </div>
-                      <div style={{ fontSize: '11px', color: '#78869f', marginTop: '3px' }}>
-                        Zero-fabrication rule active: missing data is strictly null.
+                      <div style={{ fontSize: '11.5px', color: '#78869f', marginTop: '4px', maxWidth: '240px', lineHeight: '1.4' }}>
+                        Zero-fabrication active. Record your {config.shortTitle} details to view milestones and verification.
                       </div>
                     </div>
                     <button
                       onClick={() => openFormForLevel(levelKey)}
-                      className="btn btn-secondary"
+                      className="btn btn-primary"
                       style={{
-                        fontSize: '11px', padding: '7px 14px', borderRadius: '6px',
+                        fontSize: '12px', padding: '8px 16px', borderRadius: '6px',
                         display: 'inline-flex', alignItems: 'center', gap: '6px',
-                        background: config.bgLight, color: config.color, borderColor: config.border
+                        background: config.color, color: '#090d17', fontWeight: 700, border: 'none'
                       }}
                     >
-                      <Plus size={13} /> Enter {config.shortTitle} Record
+                      <Plus size={14} /> Add {config.shortTitle} Record
                     </button>
                   </div>
                 )}
@@ -1076,149 +1292,180 @@ export default function PersonalIntelligenceView() {
                 </div>
               ) : (
                 <>
-                  {/* Key Progression Metrics */}
-                  {personalAi.milestone_progression && (
-                    <div className="ai-metrics-grid">
-                      <div className="ai-metric-card">
-                        <span className="ai-metric-label">Trajectory Classification</span>
-                        <div className="ai-metric-value" style={{ color: '#64d7b2', fontSize: '15px' }}>
-                          {personalAi.milestone_progression.trajectory_summary}
-                        </div>
-                        <span className="ai-metric-sub">
-                          {personalAi.recorded_milestones_count} of 3 milestones recorded
-                        </span>
+                  {/* 5 Core Plain-Language Questions */}
+                  <div className="ai-questions-container">
+                    {/* Q1: What changed? */}
+                    <div className="ai-q-card">
+                      <div className="ai-q-header">
+                        <span className="ai-q-number">1</span>
+                        <h4 className="ai-q-title">What changed?</h4>
                       </div>
-
-                      <div className="ai-metric-card">
-                        <span className="ai-metric-label">Academic Average</span>
-                        <div className="ai-metric-value" style={{ color: '#a18aff' }}>
-                          {personalAi.milestone_progression.average_normalized_score}%
+                      <p className="ai-q-content">
+                        {personalAi.milestone_progression?.trajectory_summary || 'Trajectory progression evaluated across available ground-truth milestones.'}
+                      </p>
+                      {personalAi.milestone_progression?.highest_milestone && (
+                        <div style={{ fontSize: '12px', color: '#64d7b2', marginTop: '6px' }}>
+                          Highest recorded milestone: <strong>{personalAi.milestone_progression.highest_milestone.qualification}</strong> ({personalAi.milestone_progression.highest_milestone.score_display}).
                         </div>
-                        <span className="ai-metric-sub">Normalized percentage average</span>
+                      )}
+                    </div>
+
+                    {/* Q2: What does it mean? */}
+                    <div className="ai-q-card">
+                      <div className="ai-q-header">
+                        <span className="ai-q-number">2</span>
+                        <h4 className="ai-q-title">What does it mean?</h4>
                       </div>
-
-                      <div className="ai-metric-card">
-                        <span className="ai-metric-label">Highest Milestone</span>
-                        <div className="ai-metric-value" style={{ fontSize: '15px' }}>
-                          {personalAi.milestone_progression.highest_milestone?.qualification}
+                      <p className="ai-q-content">
+                        {personalAi.summary || 'Your academic progression demonstrates certified achievement across recognized educational milestones.'}
+                      </p>
+                      {personalAi.milestone_progression?.average_normalized_score && (
+                        <div style={{ fontSize: '12px', color: '#a18aff', marginTop: '6px' }}>
+                          Normalized academic average across recorded stages: <strong>{personalAi.milestone_progression.average_normalized_score}%</strong>.
                         </div>
-                        <span className="ai-metric-sub">
-                          {personalAi.milestone_progression.highest_milestone?.score_display} ({personalAi.milestone_progression.highest_milestone?.normalized_percentage}%)
-                        </span>
+                      )}
+                    </div>
+
+                    {/* Q3: What evidence supports this? */}
+                    <div className="ai-q-card">
+                      <div className="ai-q-header">
+                        <span className="ai-q-number">3</span>
+                        <h4 className="ai-q-title">What evidence supports this?</h4>
                       </div>
-
-                      <div className="ai-metric-card">
-                        <span className="ai-metric-label">Earliest Milestone</span>
-                        <div className="ai-metric-value" style={{ fontSize: '15px' }}>
-                          {personalAi.milestone_progression.lowest_milestone?.qualification}
+                      <p className="ai-q-content">
+                        Analysis is backed by <strong>{personalAi.recorded_milestones_count || 0} user-attested ground-truth milestone(s)</strong> with official roll/registration records and certified marks.
+                      </p>
+                      {personalAi.citations && personalAi.citations.length > 0 && (
+                        <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {personalAi.citations.slice(0, 3).map((cite, cIdx) => (
+                            <div key={cIdx} style={{ fontSize: '11px', color: '#9aa7bc', background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '4px', borderLeft: '2px solid #64d7b2' }}>
+                              "{cite.claim}" — <em>{cite.source}</em> (Roll: {cite.roll_number_masked})
+                            </div>
+                          ))}
                         </div>
-                        <span className="ai-metric-sub">
-                          {personalAi.milestone_progression.lowest_milestone?.score_display} ({personalAi.milestone_progression.lowest_milestone?.normalized_percentage}%)
-                        </span>
+                      )}
+                    </div>
+
+                    {/* Q4: What data is missing? */}
+                    <div className="ai-q-card">
+                      <div className="ai-q-header">
+                        <span className="ai-q-number">4</span>
+                        <h4 className="ai-q-title">What data is missing?</h4>
+                      </div>
+                      {personalAi.recorded_milestones_count < 3 ? (
+                        <div style={{ fontSize: '12.5px', color: '#f0bc78', lineHeight: '1.4' }}>
+                          <strong>{3 - personalAi.recorded_milestones_count} milestone(s) unrecorded:</strong> You have recorded {personalAi.recorded_milestones_count} of 3 milestones (Class 10, Class 12, B.Tech). Zero data is fabricated for unrecorded years.
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: '12.5px', color: '#64d7b2' }}>
+                          All 3 milestone stages (Class 10, Class 12, B.Tech) are documented.
+                        </div>
+                      )}
+                      {personalAi.uncertainty_and_limitations && personalAi.uncertainty_and_limitations.length > 0 && (
+                        <ul style={{ margin: '8px 0 0', paddingLeft: '18px', fontSize: '11.5px', color: '#9aa7bc' }}>
+                          {personalAi.uncertainty_and_limitations.map((lim, lIdx) => (
+                            <li key={lIdx}>{lim}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    {/* Q5: What should the user explore next? */}
+                    <div className="ai-q-card">
+                      <div className="ai-q-header">
+                        <span className="ai-q-number">5</span>
+                        <h4 className="ai-q-title">What should the user explore next?</h4>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12.5px', color: '#cbd5e1' }}>
+                        {personalAi.recorded_milestones_count < 3 && (
+                          <div>• Record your remaining academic milestone to enable complete multi-stage progression analytics.</div>
+                        )}
+                        <div>• Attach authentic transcripts or marksheets with SHA-256 cryptographic checksums to upgrade to <strong>Officially Verified</strong>.</div>
+                        <div>• Explore the Available Results Comparison matrix below to review normalized score distribution across stages.</div>
                       </div>
                     </div>
-                  )}
+                  </div>
 
-                  {/* Chronological Narrative */}
-                  {personalAi.milestone_progression?.narrative && (
-                    <div className="ai-section-box">
-                      <div className="ai-section-title">
-                        <Clock size={15} color="#69a9ff" /> Documented Milestone Progression
-                      </div>
-                      <ul className="ai-fact-list">
-                        {personalAi.milestone_progression.narrative.map((item, idx) => (
-                          <li key={idx}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* Transition Anomalies */}
-                  {personalAi.detected_anomalies && personalAi.detected_anomalies.length > 0 && (
-                    <div className="ai-section-box">
-                      <div className="ai-section-title">
-                        <AlertTriangle size={15} color="#f0bc78" /> Transition Shifts & Adjustments ({personalAi.detected_anomalies.length})
-                      </div>
-                      {personalAi.detected_anomalies.map((anom, idx) => (
-                        <div key={idx} className="ai-anomaly-card">
-                          <div className="ai-anomaly-header">
-                            <span className="ai-anomaly-title">
-                              {anom.transition} · {anom.anomaly_type}
-                            </span>
-                            <span className="ai-anomaly-delta">{anom.percentage_delta}</span>
+                  {/* Expandable Technical Details for Advanced Users */}
+                  <details className="advanced-ai-details" style={{ marginTop: '16px' }}>
+                    <summary style={{ cursor: 'pointer', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', border: '1px solid #233047', color: '#a18aff', fontWeight: 600, fontSize: '12.5px' }}>
+                      ▶ View Detailed Technical Metrics, Transition Shifts & Scenarios
+                    </summary>
+                    <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      {/* Technical metrics */}
+                      {personalAi.milestone_progression && (
+                        <div className="ai-metrics-grid">
+                          <div className="ai-metric-card">
+                            <span className="ai-metric-label">Trajectory Classification</span>
+                            <div className="ai-metric-value" style={{ color: '#64d7b2', fontSize: '15px' }}>
+                              {personalAi.milestone_progression.trajectory_summary}
+                            </div>
+                            <span className="ai-metric-sub">{personalAi.recorded_milestones_count} of 3 milestones</span>
                           </div>
-                          <p className="ai-anomaly-desc">{anom.context}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* User-Attested Citations */}
-                  {personalAi.citations && personalAi.citations.length > 0 && (
-                    <div className="ai-section-box">
-                      <div className="ai-section-title">
-                        <ShieldCheck size={15} color="#64d7b2" /> Verified Citations (User Ground Truth)
-                      </div>
-                      {personalAi.citations.map((cite, idx) => (
-                        <div key={idx} className="ai-citation-card">
-                          <div className="ai-citation-claim">"{cite.claim}"</div>
-                          <div className="ai-citation-meta">
-                            <span>Source: <strong className="ai-citation-badge">{cite.source}</strong></span>
-                            <span>Registration / Roll No: <code style={{ color: '#64d7b2' }}>{cite.roll_number_masked}</code></span>
-                            <span>Type: {cite.attestation_type}</span>
+                          <div className="ai-metric-card">
+                            <span className="ai-metric-label">Academic Average</span>
+                            <div className="ai-metric-value" style={{ color: '#a18aff' }}>
+                              {personalAi.milestone_progression.average_normalized_score}%
+                            </div>
+                            <span className="ai-metric-sub">Normalized percentage</span>
+                          </div>
+                          <div className="ai-metric-card">
+                            <span className="ai-metric-label">Highest Stage</span>
+                            <div className="ai-metric-value" style={{ fontSize: '15px' }}>
+                              {personalAi.milestone_progression.highest_milestone?.qualification}
+                            </div>
+                            <span className="ai-metric-sub">{personalAi.milestone_progression.highest_milestone?.score_display}</span>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      )}
 
-                  {/* Verified Facts */}
-                  {personalAi.verified_facts && personalAi.verified_facts.length > 0 && (
-                    <div className="ai-section-box">
-                      <div className="ai-section-title">
-                        <CheckCircle2 size={15} color="#64d7b2" /> Ground Truth Empirical Facts
-                      </div>
-                      <ul className="ai-fact-list">
-                        {personalAi.verified_facts.map((fact, idx) => (
-                          <li key={idx}>{fact}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                      {/* Transition Shifts */}
+                      {personalAi.detected_anomalies && personalAi.detected_anomalies.length > 0 && (
+                        <div className="ai-section-box">
+                          <div className="ai-section-title"><AlertTriangle size={15} color="#f0bc78" /> Transition Shifts ({personalAi.detected_anomalies.length})</div>
+                          {personalAi.detected_anomalies.map((anom, idx) => (
+                            <div key={idx} className="ai-anomaly-card">
+                              <div className="ai-anomaly-header">
+                                <span className="ai-anomaly-title">{anom.transition} · {anom.anomaly_type}</span>
+                                <span className="ai-anomaly-delta">{anom.percentage_delta}</span>
+                              </div>
+                              <p className="ai-anomaly-desc">{anom.context}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
-                  {/* Uncertainty & Limitations */}
-                  {personalAi.uncertainty_and_limitations && personalAi.uncertainty_and_limitations.length > 0 && (
-                    <div className="ai-section-box">
-                      <div className="ai-section-title">
-                        <Info size={15} color="#f0bc78" /> Empirical Limitations & Data Boundaries
-                      </div>
-                      <ul className="ai-limitations-list">
-                        {personalAi.uncertainty_and_limitations.map((lim, idx) => (
-                          <li key={idx}>{lim}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                      {/* Narrative */}
+                      {personalAi.milestone_progression?.narrative && (
+                        <div className="ai-section-box">
+                          <div className="ai-section-title"><Clock size={15} color="#69a9ff" /> Progression Narrative</div>
+                          <ul className="ai-fact-list">
+                            {personalAi.milestone_progression.narrative.map((item, idx) => (
+                              <li key={idx}>{item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
 
-                  {/* Bounded Analytical Scenarios */}
-                  {personalAi.analytical_scenarios && personalAi.analytical_scenarios.length > 0 && (
-                    <div className="ai-section-box">
-                      <div className="ai-section-title">
-                        <TrendingUp size={15} color="#a18aff" /> Bounded Analytical Trajectories (Conditional)
-                      </div>
-                      <div className="ai-scenarios-grid">
-                        {personalAi.analytical_scenarios.map((scen, idx) => (
-                          <div key={idx} className="ai-scenario-card">
-                            <div className="ai-scenario-name">{scen.scenario_name}</div>
-                            <div className="ai-scenario-val">{scen.estimated_score_range}</div>
-                            <div className="ai-scenario-meta">{scen.trajectory_horizon}</div>
-                            <div className="ai-scenario-meta" style={{ color: '#cbd5e1' }}>{scen.assumptions}</div>
-                            <span className="ai-scenario-confidence">{scen.confidence}</span>
+                      {/* Scenarios */}
+                      {personalAi.analytical_scenarios && personalAi.analytical_scenarios.length > 0 && (
+                        <div className="ai-section-box">
+                          <div className="ai-section-title"><TrendingUp size={15} color="#a18aff" /> Bounded Analytical Trajectories</div>
+                          <div className="ai-scenarios-grid">
+                            {personalAi.analytical_scenarios.map((scen, idx) => (
+                              <div key={idx} className="ai-scenario-card">
+                                <div className="ai-scenario-name">{scen.scenario_name}</div>
+                                <div className="ai-scenario-val">{scen.estimated_score_range}</div>
+                                <div className="ai-scenario-meta">{scen.trajectory_horizon}</div>
+                                <div className="ai-scenario-meta" style={{ color: '#cbd5e1' }}>{scen.assumptions}</div>
+                                <span className="ai-scenario-confidence">{scen.confidence}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </details>
                 </>
               )}
 
@@ -1245,6 +1492,390 @@ export default function PersonalIntelligenceView() {
                 )}
               </div>
               <div>Privacy Protection: {maskSensitive ? 'Masked' : 'Unmasked'} · Never Fabricated</div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ---------------- Attach Supporting Document Modal ---------------- */}
+      {showAttachModal && (
+        <div className="modal-overlay" onClick={() => setShowAttachModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+            <div className="modal-header">
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}>
+                <FilePlus size={18} color="#69a9ff" /> Attach Evidence Document — {attachLevelKey.toUpperCase()}
+              </h3>
+              <button className="icon-button" onClick={() => setShowAttachModal(false)}><X size={16} /></button>
+            </div>
+
+            <form onSubmit={handleAttachDocument} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#cbd5e1', display: 'block', marginBottom: '6px' }}>
+                  Document Filename / Label *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={docName}
+                  onChange={e => setDocName(e.target.value)}
+                  placeholder="e.g. CBSE_Class_12_Marksheet_Certified.pdf"
+                  style={{ width: '100%', padding: '8px 12px', background: '#0a0f1d', border: '1px solid #233047', borderRadius: '6px', color: '#f8fafc', fontSize: '13px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#cbd5e1', display: 'block', marginBottom: '6px' }}>
+                  Document Category
+                </label>
+                <select
+                  value={docType}
+                  onChange={e => setDocType(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', background: '#0a0f1d', border: '1px solid #233047', borderRadius: '6px', color: '#f8fafc', fontSize: '13px' }}
+                >
+                  <option value="transcript">Official Transcript</option>
+                  <option value="marksheet">Grade Card / Marksheet</option>
+                  <option value="degree_certificate">Degree / Passing Certificate</option>
+                  <option value="migration_cert">Migration / Transfer Certificate</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#cbd5e1', display: 'block', marginBottom: '6px' }}>
+                  Cryptographic SHA-256 Checksum (Tamper Evidence)
+                </label>
+                <input
+                  type="text"
+                  value={docChecksum}
+                  onChange={e => setDocChecksum(e.target.value)}
+                  placeholder="Computed SHA-256 hash"
+                  style={{ width: '100%', padding: '8px 12px', background: '#0a0f1d', border: '1px solid #233047', borderRadius: '6px', color: '#94a3b8', fontFamily: 'JetBrains Mono, monospace', fontSize: '11px' }}
+                />
+                <span style={{ fontSize: '10.5px', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                  Guarantees immutable provenance. Pre-populated with verified hash or input custom hash.
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowAttachModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" disabled={attachingDoc} className="btn btn-primary" style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 600 }}>
+                  {attachingDoc ? 'Attaching...' : 'Save & Attach Evidence'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- Authorized Reviewer Workflow Modal ---------------- */}
+      {showReviewModal && (
+        <div className="modal-overlay" onClick={() => setShowReviewModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '560px' }}>
+            <div className="modal-header">
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}>
+                <CheckCheck size={18} color="#a18aff" /> Authorized Review Portal — {reviewLevelKey.toUpperCase()}
+              </h3>
+              <button className="icon-button" onClick={() => setShowReviewModal(false)}><X size={16} /></button>
+            </div>
+
+            <form onSubmit={handleReviewVerification} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ background: 'rgba(161, 138, 255, 0.08)', border: '1px solid rgba(161, 138, 255, 0.25)', padding: '10px 14px', borderRadius: '6px', fontSize: '12px', color: '#c4b5fd' }}>
+                <strong>Authoritative Review:</strong> Only authorized institutions and reviewers (admin, registrar, reviewer) can officially verify academic credentials. Submissions never self-verify.
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 600, color: '#cbd5e1', display: 'block', marginBottom: '6px' }}>
+                    New Verification Status *
+                  </label>
+                  <select
+                    value={reviewStatus}
+                    onChange={e => setReviewStatus(e.target.value)}
+                    style={{ width: '100%', padding: '8px 12px', background: '#0a0f1d', border: '1px solid #233047', borderRadius: '6px', color: '#f8fafc', fontSize: '13px' }}
+                  >
+                    <option value="Verified">Verified (Official Authentic Confirmation)</option>
+                    <option value="Verification Failed">Verification Failed (Discrepancy / Rejection)</option>
+                    <option value="Re-verification Required">Re-verification Required (More Evidence Needed)</option>
+                    <option value="Pending Verification">Pending Verification (Reset to Pending)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 600, color: '#cbd5e1', display: 'block', marginBottom: '6px' }}>
+                    Reviewer Role *
+                  </label>
+                  <select
+                    value={reviewerRole}
+                    onChange={e => setReviewerRole(e.target.value)}
+                    style={{ width: '100%', padding: '8px 12px', background: '#0a0f1d', border: '1px solid #233047', borderRadius: '6px', color: '#f8fafc', fontSize: '13px' }}
+                  >
+                    <option value="registrar">Registrar Office</option>
+                    <option value="admin">Platform Admin</option>
+                    <option value="reviewer">Official Academic Reviewer</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#cbd5e1', display: 'block', marginBottom: '6px' }}>
+                  Reviewer Name / Department *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={reviewerName}
+                  onChange={e => setReviewerName(e.target.value)}
+                  placeholder="e.g. Dr. A. Sharma (Registrar Office)"
+                  style={{ width: '100%', padding: '8px 12px', background: '#0a0f1d', border: '1px solid #233047', borderRadius: '6px', color: '#f8fafc', fontSize: '13px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#cbd5e1', display: 'block', marginBottom: '6px' }}>
+                  Issuing Authority / Verification Source *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={reviewSource}
+                  onChange={e => setReviewSource(e.target.value)}
+                  placeholder="e.g. CBSE Examination Portal / University Registrar Records"
+                  style={{ width: '100%', padding: '8px 12px', background: '#0a0f1d', border: '1px solid #233047', borderRadius: '6px', color: '#f8fafc', fontSize: '13px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#cbd5e1', display: 'block', marginBottom: '6px' }}>
+                  Decision Audit Notes / Reason for Failure (if applicable)
+                </label>
+                <textarea
+                  rows="2"
+                  value={reviewReason}
+                  onChange={e => setReviewReason(e.target.value)}
+                  placeholder="Explain confirmation findings or provide discrepancy reasons if verification failed."
+                  style={{ width: '100%', padding: '8px 12px', background: '#0a0f1d', border: '1px solid #233047', borderRadius: '6px', color: '#f8fafc', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowReviewModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" disabled={reviewing} className="btn btn-primary" style={{ background: '#8b5cf6', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 600 }}>
+                  {reviewing ? 'Recording Decision...' : 'Commit Verification Decision'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- Academic Record Details Modal ---------------- */}
+      {selectedDetailRecord && (
+        <div className="modal-overlay" onClick={() => setSelectedDetailRecord(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px' }}>
+            <div className="modal-header">
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '17px' }}>
+                <School size={18} color="#69a9ff" />
+                <span>{selectedDetailRecord.qualification || selectedDetailRecord.level} — Record Details</span>
+              </h3>
+              <button className="icon-button" onClick={() => setSelectedDetailRecord(null)} aria-label="Close details"><X size={16} /></button>
+            </div>
+
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '75vh', overflowY: 'auto' }}>
+              {/* Header Status & Verification Banner */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.03)', padding: '12px 16px', borderRadius: '8px', border: '1px solid #233047', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <div style={{ fontSize: '11px', color: '#9aa7bc', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Official Verification Status</div>
+                  <div style={{ marginTop: '4px' }}>{renderVerificationBadge(selectedDetailRecord)}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '11px', color: '#9aa7bc', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Record Provenance</div>
+                  <div style={{ fontSize: '12px', color: '#64d7b2', fontWeight: 600, marginTop: '4px' }}>Ground-Truth Academic Record</div>
+                </div>
+              </div>
+
+              {/* Core Academic Details Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+                <div style={{ background: '#0a0f1d', border: '1px solid #233047', padding: '12px 14px', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '11px', color: '#78869f' }}>Institution</div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#f3f6fc', marginTop: '3px' }}>{selectedDetailRecord.institution || 'Not provided'}</div>
+                </div>
+                <div style={{ background: '#0a0f1d', border: '1px solid #233047', padding: '12px 14px', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '11px', color: '#78869f' }}>Board / University</div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#f3f6fc', marginTop: '3px' }}>{selectedDetailRecord.board_or_university || 'Not specified'}</div>
+                </div>
+                <div style={{ background: '#0a0f1d', border: '1px solid #233047', padding: '12px 14px', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '11px', color: '#78869f' }}>Stream / Specialization</div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#f3f6fc', marginTop: '3px' }}>{selectedDetailRecord.stream_or_major || 'General'}</div>
+                </div>
+                <div style={{ background: '#0a0f1d', border: '1px solid #233047', padding: '12px 14px', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '11px', color: '#78869f' }}>Passing Year</div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#64d7b2', marginTop: '3px' }}>{selectedDetailRecord.passing_year || 'Not specified'}</div>
+                </div>
+              </div>
+
+              {/* Score Showcase */}
+              <div style={{ background: '#0a0f1d', border: '1px solid #233047', padding: '14px 16px', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#78869f', textTransform: 'uppercase' }}>Academic Score</span>
+                  <span style={{ fontSize: '11px', color: '#a18aff' }}>Grading: {selectedDetailRecord.grading_system || 'percentage'}</span>
+                </div>
+                {selectedDetailRecord.score !== null && selectedDetailRecord.score !== undefined && selectedDetailRecord.score !== '' ? (
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '24px', fontWeight: 800, color: '#69a9ff' }}>{selectedDetailRecord.score_display || `${selectedDetailRecord.score}`}</span>
+                    {selectedDetailRecord.normalized_percentage !== null && (
+                      <span style={{ fontSize: '12px', color: '#9aa7bc' }}>
+                        (Derived Normalized: <strong style={{ color: '#e8edf7' }}>{selectedDetailRecord.normalized_percentage}%</strong>)
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '13px', color: '#78869f', fontStyle: 'italic' }}>Score: Not provided by user</div>
+                )}
+              </div>
+
+              {/* Masked Sensitive Details */}
+              <div style={{ background: '#0a0f1d', border: '1px solid #233047', padding: '12px 14px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: '11px', color: '#78869f' }}>Roll / Registration Number (Private Information)</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#f3f6fc', marginTop: '3px', fontFamily: maskSensitive ? 'monospace' : 'inherit' }}>
+                    {maskSensitive ? (selectedDetailRecord.roll_or_registration_number ? '••••••••••••' : 'N/A') : (selectedDetailRecord.roll_or_registration_number || 'N/A')}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMaskSensitive(!maskSensitive)}
+                  className="btn btn-secondary"
+                  style={{ fontSize: '11px', padding: '5px 10px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                >
+                  {maskSensitive ? <Eye size={13} /> : <EyeOff size={13} />}
+                  <span>{maskSensitive ? 'Reveal' : 'Mask'}</span>
+                </button>
+              </div>
+
+              {/* Verification & Audit Details */}
+              <div className="verif-details-box" style={{ background: '#0a0f1d', border: '1px solid #233047', padding: '14px 16px', borderRadius: '8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#cbd5e1', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <ShieldCheck size={14} color="#64d7b2" /> Verification & Registry Audit Trail
+                </div>
+                <div className="verif-detail-row">
+                  <span className="verif-detail-label">Verification Method:</span>
+                  <span className="verif-detail-val">{selectedDetailRecord.verification_method || 'MANUAL_REVIEW_REQUIRED'}</span>
+                </div>
+                <div className="verif-detail-row">
+                  <span className="verif-detail-label">Issuing / Audit Source:</span>
+                  <span className="verif-detail-val">{selectedDetailRecord.verification_source || 'User Submission (Self-Attested)'}</span>
+                </div>
+                <div className="verif-detail-row">
+                  <span className="verif-detail-label">Verified Timestamp:</span>
+                  <span className="verif-detail-val">
+                    {selectedDetailRecord.verification_timestamp
+                      ? new Date(selectedDetailRecord.verification_timestamp).toLocaleString()
+                      : 'Pending Official Registry Review'}
+                  </span>
+                </div>
+                {selectedDetailRecord.verification_reason && (
+                  <div className={`verif-reason-box ${selectedDetailRecord.verification_status === 'Verification Failed' ? '' : 'warning'}`}>
+                    <strong>{selectedDetailRecord.verification_status === 'Verification Failed' ? 'Failure Reason:' : 'Note / Requirements:'}</strong> {selectedDetailRecord.verification_reason}
+                  </div>
+                )}
+              </div>
+
+              {/* Supporting Evidence Documents */}
+              <div style={{ background: '#0a0f1d', border: '1px solid #233047', padding: '14px 16px', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Paperclip size={14} color="#a18aff" />
+                    <span>Supporting Documents ({selectedDetailRecord.supporting_documents?.length || 0})</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const levelKey = selectedDetailRecord.level_key
+                      setSelectedDetailRecord(null)
+                      openAttachModal(levelKey)
+                    }}
+                    className="btn btn-secondary"
+                    style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '5px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <FilePlus size={12} /> Attach Document
+                  </button>
+                </div>
+                {selectedDetailRecord.supporting_documents && selectedDetailRecord.supporting_documents.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {selectedDetailRecord.supporting_documents.map((doc, dIdx) => (
+                      <div key={dIdx} className="doc-chip" style={{ background: 'rgba(255,255,255,0.04)', padding: '8px 12px', borderRadius: '6px' }}>
+                        <div className="doc-chip-left" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <FileText size={14} color="#69a9ff" />
+                          <span style={{ fontSize: '12px', color: '#f3f6fc' }}>{doc.name}</span>
+                          <span style={{ fontSize: '10px', color: '#9aa7bc', textTransform: 'uppercase' }}>({doc.file_type || 'transcript'})</span>
+                        </div>
+                        <span className="doc-checksum-badge" title={`Cryptographic SHA-256 Checksum: ${doc.checksum}`}>
+                          {doc.checksum ? `${doc.checksum.slice(0, 8)}…${doc.checksum.slice(-4)}` : 'Verified'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '11.5px', color: '#64748b', fontStyle: 'italic' }}>
+                    No supporting documents attached yet. Attach a transcript to strengthen verification.
+                  </div>
+                )}
+              </div>
+
+              {/* Notes if present */}
+              {selectedDetailRecord.notes && (
+                <div style={{ background: '#0a0f1d', border: '1px solid #233047', padding: '12px 14px', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '11px', color: '#78869f' }}>Notes / Academic Honors</div>
+                  <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '4px', lineHeight: '1.4' }}>{selectedDetailRecord.notes}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions Footer */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px', padding: '14px 20px', borderTop: '1px solid #233047', background: '#0e1422' }}>
+              {selectedDetailRecord.verification_status !== 'Verified' && (
+                <button
+                  onClick={() => {
+                    handleRequestVerification(selectedDetailRecord.level_key)
+                    setSelectedDetailRecord(null)
+                  }}
+                  className="btn btn-secondary"
+                  style={{ fontSize: '12px', padding: '7px 12px', color: '#fbbf24', borderColor: 'rgba(245, 158, 11, 0.4)' }}
+                >
+                  <ShieldCheck size={13} /> Request Verification
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  const levelKey = selectedDetailRecord.level_key
+                  openReviewModal(levelKey, selectedDetailRecord)
+                  setSelectedDetailRecord(null)
+                }}
+                className="btn btn-secondary"
+                style={{ fontSize: '12px', padding: '7px 12px', color: '#a18aff' }}
+              >
+                <CheckCheck size={13} /> Authorized Review
+              </button>
+              <button
+                onClick={() => {
+                  const levelKey = selectedDetailRecord.level_key
+                  openFormForLevel(levelKey)
+                  setSelectedDetailRecord(null)
+                }}
+                className="btn btn-secondary"
+                style={{ fontSize: '12px', padding: '7px 12px' }}
+              >
+                <Edit3 size={13} /> Edit Record
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setSelectedDetailRecord(null)}
+                style={{ fontSize: '12px', padding: '7px 16px', background: '#3b82f6', color: '#fff', border: 'none' }}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

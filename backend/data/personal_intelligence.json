@@ -2,29 +2,7 @@
   "meta": {
     "candidate_name": "Student Profile",
     "created_at": "2026-10-15T11:58:51Z",
-    "last_updated": "2026-10-16T08:15:07Z"
+    "last_updated": "2026-10-18T14:33:54Z"
   },
-  "records": {
-    "class_12": {
-      "id": "acad_class_12",
-      "level_key": "class_12",
-      "qualification": "Class 12",
-      "level_order": 2,
-      "institution": "Springdales School",
-      "board_or_university": "CBSE",
-      "passing_year": 2020,
-      "stream_or_major": "Science (PCM)",
-      "grading_system": "percentage",
-      "score": 91.0,
-      "max_score": 100.0,
-      "roll_or_registration_number": "2000843",
-      "notes": "",
-      "record_type": "ACTUAL_RECORD",
-      "verified": true,
-      "source": "User Submission (Self-Attested)",
-      "recorded_at": "2026-10-16T08:15:07Z",
-      "updated_at": "2026-10-16T08:15:07Z",
-      "version": 1
-    }
-  }
+  "records": {}
 }

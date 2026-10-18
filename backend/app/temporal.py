@@ -12,6 +12,28 @@ import copy
 from datetime import datetime, timezone, timedelta
 from typing import Any
 
+try:
+    from .temporal_universal import (
+        UniversalTimestampParser,
+        StructuredRecordTemporalParser,
+        TemporalDataAnalyzer,
+        TemporalRecord,
+        UniversalTimestamp,
+        TimestampPrecision,
+        TemporalValidationStatus,
+    )
+except (ImportError, ValueError):
+    from app.temporal_universal import (
+        UniversalTimestampParser,
+        StructuredRecordTemporalParser,
+        TemporalDataAnalyzer,
+        TemporalRecord,
+        UniversalTimestamp,
+        TimestampPrecision,
+        TemporalValidationStatus,
+    )
+
+
 TIME_OFFSETS = {
     "now": 0,
     "current": 0,
@@ -357,3 +379,110 @@ class TemporalGraphEngine:
             "timeline": events,
             "event_count": len(events),
         }
+
+    def get_universal_temporal_records(
+        self,
+        precision: str | None = None,
+        validation_status: str | None = None,
+        requires_review_only: bool = False,
+    ) -> list[TemporalRecord]:
+        """Convert all store nodes and timeline checkpoints to Universal Temporal Records."""
+        nodes = self.store.get_all_nodes_with_history()
+        adapter = StructuredRecordTemporalParser()
+        records: list[TemporalRecord] = []
+
+        for n in nodes:
+            # If node already has temporal attached from ingestion, load directly
+            if "temporal" in n and isinstance(n["temporal"], dict):
+                t_obj = UniversalTimestamp(**n["temporal"])
+                rec = TemporalRecord(id=n["id"], record_type=n.get("kind", "Entity"), data=n, temporal=t_obj)
+            else:
+                rec = adapter.parse(n, source_name="knowledge_graph")
+            records.append(rec)
+
+        return TemporalDataAnalyzer.filter_records(
+            records=records,
+            precision=precision,
+            validation_status=validation_status,
+            requires_review_only=requires_review_only,
+        )
+
+    def analyze_temporal(
+        self,
+        records: list[dict[str, Any]] | None = None,
+        start_time: str | None = None,
+        end_time: str | None = None,
+        precision: str | None = None,
+        validation_status: str | None = None,
+        requires_review_only: bool = False,
+        sort_order: str = "asc",
+    ) -> dict[str, Any]:
+        """Perform comprehensive temporal data analysis, filtering, sorting, and timeline visualization."""
+        if records is not None:
+            adapter = StructuredRecordTemporalParser()
+            temporal_records = [adapter.parse(r, source_name="custom_input") for r in records]
+        else:
+            temporal_records = self.get_universal_temporal_records()
+
+        filtered = TemporalDataAnalyzer.filter_records(
+            records=temporal_records,
+            start_time=start_time,
+            end_time=end_time,
+            precision=precision,
+            validation_status=validation_status,
+            requires_review_only=requires_review_only,
+        )
+
+        sorted_recs = TemporalDataAnalyzer.sort_chronologically(filtered, order=sort_order)
+        viz_data = TemporalDataAnalyzer.build_timeline_visualization(sorted_recs)
+
+        return {
+            "query": {
+                "start_time": start_time,
+                "end_time": end_time,
+                "precision": precision,
+                "validation_status": validation_status,
+                "requires_review_only": requires_review_only,
+                "sort_order": sort_order,
+            },
+            "analysis": viz_data,
+        }
+
+    def compare_historical_windows(
+        self,
+        window_a_start: str,
+        window_a_end: str,
+        window_b_start: str,
+        window_b_end: str,
+        numeric_field: str | None = None,
+    ) -> dict[str, Any]:
+        """Compare data velocity, review flags, and metrics across two historical intervals."""
+        all_recs = self.get_universal_temporal_records()
+        return TemporalDataAnalyzer.compare_historical_windows(
+            records=all_recs,
+            window_a_start=window_a_start,
+            window_a_end=window_a_end,
+            window_b_start=window_b_start,
+            window_b_end=window_b_end,
+            numeric_field=numeric_field,
+        )
+
+    def get_review_flags(self) -> dict[str, Any]:
+        """Retrieve all records flagged for human review (missing, malformed, conflicting, implausible)."""
+        flagged = self.get_universal_temporal_records(requires_review_only=True)
+        return {
+            "total_flagged": len(flagged),
+            "flagged_records": [
+                {
+                    "id": r.id,
+                    "record_type": r.record_type,
+                    "validation_status": r.temporal.validation_status.value,
+                    "validation_flags": r.temporal.validation_flags,
+                    "original_timestamp": r.temporal.original_event_time,
+                    "timezone": r.temporal.timezone,
+                    "provenance": r.temporal.source_provenance,
+                }
+                for r in flagged
+            ],
+        }
+

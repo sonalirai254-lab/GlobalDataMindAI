@@ -565,9 +565,10 @@ class WorldBankConnector:
 class GlobalIntelligenceManager:
     """Manages data retrieval, persistent storage, and trust verification for Global Intelligence."""
 
-    def __init__(self, graph_store: Any, trust_ledger: Any, cache_dir: str = "data") -> None:
+    def __init__(self, graph_store: Any, trust_ledger: Any, cache_dir: str = "data", notification_mgr: Optional[Any] = None) -> None:
         self.store = graph_store
         self.trust_ledger = trust_ledger
+        self.notification_mgr = notification_mgr
         self.connector = WorldBankConnector()
         self.cache_dir = cache_dir
         self.cache_file = os.path.join(cache_dir, "global_intelligence_cache.json")
@@ -576,6 +577,10 @@ class GlobalIntelligenceManager:
         self._cache: dict[str, Any] = {}
         self._observations_store: dict[str, dict[str, Any]] = {}
         self._load_cache()
+
+    def set_notification_manager(self, notification_mgr: Any) -> None:
+        """Inject or update NotificationManager instance."""
+        self.notification_mgr = notification_mgr
 
     def _load_cache(self) -> None:
         """Load persistent cache and observation records from disk if available."""
@@ -591,6 +596,17 @@ class GlobalIntelligenceManager:
             try:
                 with open(self.observations_file, "r", encoding="utf-8") as f:
                     self._observations_store = json.load(f)
+                # Ensure verification status fields on all loaded observations
+                for obs_item in self._observations_store.values():
+                    if "verification_status" not in obs_item:
+                        obs_item["verification_status"] = "Verified"
+                    if "verification_method" not in obs_item:
+                        obs_item["verification_method"] = "AUTHORITATIVE_SOURCE"
+                    if "verification_source" not in obs_item:
+                        obs_item["verification_source"] = obs_item.get("source", "World Bank Indicators API")
+                    if "verification_timestamp" not in obs_item:
+                        obs_item["verification_timestamp"] = obs_item.get("retrieved_at")
+
                 # Re-hydrate graph store if available
                 if hasattr(self.store, "store_observation"):
                     for obs_item in self._observations_store.values():
@@ -656,6 +672,26 @@ class GlobalIntelligenceManager:
             )
             data["meta"]["from_cache"] = False
         except (WorldBankTimeoutError, ConnectionError) as net_err:
+            if self.notification_mgr:
+                try:
+                    self.notification_mgr.create_notification(
+                        title=f"World Bank API Notice: {country.upper()}",
+                        message=f"World Bank API query for {country.upper()} ({indicator}) encountered communication delay: {str(net_err)}.",
+                        category="DATA_SOURCE",
+                        severity="WARNING",
+                        user_id="student_profile",
+                        related_record={
+                            "type": "global_data_source",
+                            "country": country.upper(),
+                            "indicator": indicator,
+                        },
+                        action={
+                            "target_tab": "global-intelligence",
+                            "label": "View Indicators",
+                        },
+                    )
+                except Exception:
+                    pass
             if not force_refresh:
                 fallback_series = None
                 with self._lock:

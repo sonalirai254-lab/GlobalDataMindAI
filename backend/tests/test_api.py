@@ -8,7 +8,7 @@ if str(_backend_dir) not in sys.path:
     sys.path.insert(0, str(_backend_dir))
 
 from fastapi.testclient import TestClient
-from app.main import app, store
+from app.main import app, store, DEFAULT_API_PORT
 
 class TestCompanyBrainAPI(unittest.TestCase):
     def setUp(self):
@@ -19,8 +19,16 @@ class TestCompanyBrainAPI(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         data = res.json()
         self.assertEqual(data["status"], "ok")
+        self.assertEqual(data["service"], "GlobalDataMind AI")
         self.assertIn("database", data)
         self.assertIn("stats", data)
+        self.assertIsInstance(data["connected"], bool)
+        # Truthful database reporting: if FalkorDB is offline, accurately report fallback mode
+        if not data["connected"]:
+            self.assertIn("offline", data["database_note"].lower())
+            self.assertIn("persistent", data["database_note"].lower())
+        self.assertEqual(data["node_count"], data["entity_count"])
+        self.assertEqual(data["edge_count"], data["relationship_count"])
 
         metrics_res = self.client.get("/api/system/metrics")
         self.assertEqual(metrics_res.status_code, 200)
@@ -284,6 +292,31 @@ class TestCompanyBrainAPI(unittest.TestCase):
         # Destructive Cypher statement block test
         bad_cypher = self.client.post("/api/cypher", json={"query": "DROP GRAPH global_datamind"})
         self.assertEqual(bad_cypher.status_code, 403)
+
+    def test_15_profile_loading_endpoint(self):
+        """Verify profile endpoint returns 200 with complete academic structure and no 503."""
+        res = self.client.get("/api/personal/profile")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn("actual_records", data)
+        self.assertIn("summary", data)
+        self.assertIn("timeline", data)
+        self.assertIn("missing_milestones", data)
+        self.assertIn("calculated_insights", data)
+        self.assertIn("comparison", data)
+        self.assertFalse(data["summary"]["privacy_mode_active"])
+
+        # Masked profile request
+        masked_res = self.client.get("/api/personal/profile?mask=true")
+        self.assertEqual(masked_res.status_code, 200)
+        masked_data = masked_res.json()
+        self.assertTrue(masked_data["summary"]["privacy_mode_active"])
+
+    def test_16_api_port_configuration(self):
+        """Verify the standardized API default port is 8000."""
+        self.assertEqual(DEFAULT_API_PORT, 8000)
+        # Verify fallback port is 8000 when PORT is unset
+        self.assertEqual(int(os.getenv("PORT", str(DEFAULT_API_PORT))), 8000)
 
 if __name__ == "__main__":
     unittest.main()

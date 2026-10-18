@@ -97,6 +97,12 @@ def mask_string(val: str, keep_tail: int = 4) -> str:
     return "*" * (len(clean) - keep_tail) + clean[-keep_tail:]
 
 
+try:
+    from .schema import VerificationStatus, VerificationReviewInput, DocumentAttachmentInput
+except (ImportError, ValueError):
+    from app.schema import VerificationStatus, VerificationReviewInput, DocumentAttachmentInput
+
+
 class AcademicRecordInput(BaseModel):
     level: str = Field(description="Qualification level: Class 10, Class 12, or B.Tech")
     institution: str = Field(min_length=2, max_length=200, description="Name of school, college, or university")
@@ -108,6 +114,7 @@ class AcademicRecordInput(BaseModel):
     max_score: float = Field(default=100.0, gt=0.0, description="Maximum possible score (100.0 for %, 10.0 for CGPA)")
     roll_or_registration_number: Optional[str] = Field(default="", max_length=60, description="Optional registration/roll number")
     notes: Optional[str] = Field(default="", max_length=500, description="Optional academic achievements or notes")
+    supporting_documents: list[dict[str, Any]] = Field(default_factory=list, description="Optional attached transcripts, marksheets or certificates")
 
 
 class PersonalIntelligenceManager:
@@ -115,9 +122,10 @@ class PersonalIntelligenceManager:
     comparative insights, and bitemporal trust provenance.
     """
 
-    def __init__(self, graph_store: Any, trust_ledger: Any, storage_dir: str = "data") -> None:
+    def __init__(self, graph_store: Any, trust_ledger: Any, storage_dir: str = "data", notification_mgr: Optional[Any] = None) -> None:
         self.store = graph_store
         self.trust_ledger = trust_ledger
+        self.notification_mgr = notification_mgr
         self.storage_dir = storage_dir
         self.storage_file = os.path.join(storage_dir, "personal_intelligence.json")
         self._lock = threading.Lock()
@@ -129,6 +137,10 @@ class PersonalIntelligenceManager:
         }
         self._load_storage()
 
+    def set_notification_manager(self, notification_mgr: Any) -> None:
+        """Inject or update NotificationManager instance."""
+        self.notification_mgr = notification_mgr
+
     def _load_storage(self) -> None:
         """Load records from persistent disk storage."""
         if os.path.exists(self.storage_file):
@@ -137,6 +149,20 @@ class PersonalIntelligenceManager:
                     payload = json.load(f)
                     self._records = payload.get("records", {})
                     self._profile_meta = payload.get("meta", self._profile_meta)
+                # Ensure all loaded records have explicit verification fields
+                for r in self._records.values():
+                    if "verification_status" not in r:
+                        r["verification_status"] = VerificationStatus.VERIFIED.value if r.get("verified") else VerificationStatus.PENDING.value
+                    if "verification_method" not in r:
+                        r["verification_method"] = "AUTHORITATIVE_SOURCE" if r.get("verified") else "MANUAL_REVIEW_REQUIRED"
+                    if "verification_source" not in r:
+                        r["verification_source"] = r.get("source", "User Submission (Self-Attested)")
+                    if "verification_timestamp" not in r:
+                        r["verification_timestamp"] = r.get("updated_at") if r.get("verified") else None
+                    if "verification_reason" not in r:
+                        r["verification_reason"] = ""
+                    if "supporting_documents" not in r:
+                        r["supporting_documents"] = []
                 # Rehydrate into graph store
                 self._sync_to_graph_store()
             except Exception as e:
@@ -225,8 +251,15 @@ class PersonalIntelligenceManager:
             "normalized_percentage": normalized_pct,
         }
 
-    def add_or_update_record(self, data: AcademicRecordInput) -> dict[str, Any]:
-        """Store verified academic record and trigger graph/provenance synchronization."""
+    def add_or_update_record(self, data: AcademicRecordInput, user_id: str = "student_profile") -> dict[str, Any]:
+        """Validate and store academic record.
+        Strict verification rules:
+        - Candidate submission is ground truth self-attestation.
+        - Format validation is distinct from authoritative verification.
+        - Automatically marks status as 'Pending Verification' with 'MANUAL_REVIEW_REQUIRED'
+          rather than falsely marking the record as verified.
+        - If an already-verified record has critical fields changed, it requires re-verification.
+        """
         val = self.validate_record(data)
         canonical_key = val["level_key"]
         now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -235,8 +268,45 @@ class PersonalIntelligenceManager:
             existing = self._records.get(canonical_key)
             record_id = f"acad_{canonical_key}"
 
+            # Check if critical academic credentials changed on an already-verified record
+            critical_changed = False
+            if existing and existing.get("verified"):
+                critical_fields = ["institution", "board_or_university", "passing_year", "score", "grading_system"]
+                for cf in critical_fields:
+                    if str(existing.get(cf)) != str(val.get(cf)):
+                        critical_changed = True
+                        break
+
+            if critical_changed:
+                verification_status = VerificationStatus.RE_VERIFICATION_REQUIRED.value
+                verification_method = "MANUAL_REVIEW_REQUIRED"
+                verification_source = "User Submission (Self-Attested)"
+                verification_timestamp = None
+                verification_reason = "Academic details modified after prior verification. Re-verification required against issuing source."
+                verified = False
+            elif existing and existing.get("verified") and not critical_changed:
+                verification_status = existing.get("verification_status", VerificationStatus.VERIFIED.value)
+                verification_method = existing.get("verification_method", "AUTHORITATIVE_SOURCE")
+                verification_source = existing.get("verification_source", "CBSE / University Registrar")
+                verification_timestamp = existing.get("verification_timestamp", now_iso)
+                verification_reason = existing.get("verification_reason", "")
+                verified = True
+            else:
+                verification_status = VerificationStatus.PENDING.value
+                verification_method = "MANUAL_REVIEW_REQUIRED"
+                verification_source = "User Submission (Self-Attested)"
+                verification_timestamp = None
+                verification_reason = "Basic format and chronological range validated. Manual verification required against issuing board or university records."
+                verified = False
+
+            # Existing supporting documents preserved and merged
+            existing_docs = existing.get("supporting_documents", []) if existing else []
+            new_docs = list(data.supporting_documents or [])
+            combined_docs = existing_docs + [d for d in new_docs if d not in existing_docs]
+
             record_entry = {
                 "id": record_id,
+                "user_id": user_id,
                 "level_key": canonical_key,
                 "qualification": val["canonical_name"],
                 "level_order": val["level_order"],
@@ -250,7 +320,13 @@ class PersonalIntelligenceManager:
                 "roll_or_registration_number": val["roll_or_registration_number"],
                 "notes": val["notes"],
                 "record_type": "ACTUAL_RECORD",  # Explicit ground truth flag
-                "verified": True,
+                "verified": verified,
+                "verification_status": verification_status,
+                "verification_method": verification_method,
+                "verification_source": verification_source,
+                "verification_timestamp": verification_timestamp,
+                "verification_reason": verification_reason,
+                "supporting_documents": combined_docs,
                 "source": "User Submission (Self-Attested)",
                 "recorded_at": existing.get("recorded_at", now_iso) if existing else now_iso,
                 "updated_at": now_iso,
@@ -264,7 +340,235 @@ class PersonalIntelligenceManager:
         self._sync_record_to_graph(record_entry)
         self._record_trust_ledger_entry(record_entry)
 
+        # Dispatch notification
+        if self.notification_mgr:
+            self.notification_mgr.create_notification(
+                title=f"{val['canonical_name']} Record Awaiting Verification",
+                message=f"Academic record for {val['canonical_name']} at {val['institution']} ({val['passing_year']}) was submitted. Basic format validated; pending authoritative review.",
+                category="VERIFICATION",
+                severity="WARNING" if not verified else "INFO",
+                user_id=user_id,
+                related_record={
+                    "id": record_id,
+                    "type": "academic_record",
+                    "level": val["canonical_name"],
+                    "institution": val["institution"],
+                    "status": verification_status,
+                },
+                action={
+                    "target_tab": "personal-intelligence",
+                    "record_id": record_id,
+                    "label": "Review Record",
+                },
+            )
+
         return self.get_profile()
+
+    def request_verification(self, level: str, user_id: str = "student_profile", notes: str = "") -> dict[str, Any]:
+        """Candidate workflow: Request formal verification of an academic milestone."""
+        canonical_key = normalize_level_key(level)
+        with self._lock:
+            record = self._records.get(canonical_key)
+            if not record:
+                raise ValueError(f"No academic record exists for '{level}'. Please submit the record before requesting verification.")
+
+            now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            record["verification_status"] = VerificationStatus.IN_PROGRESS.value
+            record["verification_method"] = "INSTITUTION_REGISTRY"
+            record["verification_reason"] = notes or "Verification request initiated with examination authority or institutional reviewer."
+            record["updated_at"] = now_iso
+            record["version"] = record.get("version", 1) + 1
+            self._save_storage()
+
+        self._sync_record_to_graph(record)
+
+        if self.notification_mgr:
+            self.notification_mgr.create_notification(
+                title=f"Verification In Progress: {record['qualification']}",
+                message=f"Verification request initiated for {record['qualification']} ({record['institution']}). Examination board / registrar verification in progress.",
+                category="VERIFICATION",
+                severity="INFO",
+                user_id=user_id,
+                related_record={
+                    "id": record["id"],
+                    "type": "academic_record",
+                    "level": record["qualification"],
+                    "status": VerificationStatus.IN_PROGRESS.value,
+                },
+                action={
+                    "target_tab": "personal-intelligence",
+                    "record_id": record["id"],
+                    "label": "Track Status",
+                },
+            )
+
+        return record
+
+    def review_verification(self, level: str, review_data: VerificationReviewInput, reviewer_user_id: str = "admin") -> dict[str, Any]:
+        """Authorized reviewer workflow: Verify, reject, or request re-verification of an academic record."""
+        allowed_roles = {"admin", "workspace_admin", "registrar", "reviewer", "authorized_reviewer"}
+        if review_data.reviewer_role.lower() not in allowed_roles:
+            raise PermissionError(
+                f"Role '{review_data.reviewer_role}' is not authorized to verify academic records. Required: {', '.join(allowed_roles)}."
+            )
+
+        canonical_key = normalize_level_key(level)
+        with self._lock:
+            record = self._records.get(canonical_key)
+            if not record:
+                raise ValueError(f"Record for '{level}' not found.")
+
+            now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            new_status = review_data.status.value
+
+            record["verification_status"] = new_status
+            record["verification_method"] = review_data.method
+            record["verification_source"] = review_data.source
+            record["verification_reason"] = review_data.reason or review_data.notes or ""
+            record["updated_at"] = now_iso
+            record["version"] = record.get("version", 1) + 1
+
+            if review_data.status == VerificationStatus.VERIFIED:
+                record["verified"] = True
+                record["verification_timestamp"] = now_iso
+                notif_title = f"{record['qualification']} Verified Officially"
+                notif_msg = f"Official verification completed by {review_data.reviewer_name} ({review_data.source}). Record confirmed as authentic."
+                notif_sev = "SUCCESS"
+            elif review_data.status == VerificationStatus.FAILED:
+                record["verified"] = False
+                record["verification_timestamp"] = None
+                notif_title = f"{record['qualification']} Verification Failed"
+                notif_msg = f"Verification could not be confirmed by {review_data.reviewer_name}. Reason: {review_data.reason or 'Discrepancy with issuing records'}."
+                notif_sev = "ERROR"
+            elif review_data.status == VerificationStatus.RE_VERIFICATION_REQUIRED:
+                record["verified"] = False
+                record["verification_timestamp"] = None
+                notif_title = f"{record['qualification']} Re-Verification Required"
+                notif_msg = f"Additional evidence or updated transcript requested by {review_data.reviewer_name}. Reason: {review_data.reason or 'Updated documentation needed'}."
+                notif_sev = "WARNING"
+            else:
+                record["verified"] = False
+                notif_title = f"{record['qualification']} Verification Updated"
+                notif_msg = f"Status updated to {new_status} by {review_data.reviewer_name}."
+                notif_sev = "INFO"
+
+            self._save_storage()
+
+        self._sync_record_to_graph(record)
+        self._record_trust_ledger_entry(record)
+
+        if self.notification_mgr:
+            self.notification_mgr.create_notification(
+                title=notif_title,
+                message=notif_msg,
+                category="VERIFICATION",
+                severity=notif_sev,
+                user_id=record.get("user_id", "student_profile"),
+                related_record={
+                    "id": record["id"],
+                    "type": "academic_record",
+                    "level": record["qualification"],
+                    "status": new_status,
+                },
+                action={
+                    "target_tab": "personal-intelligence",
+                    "record_id": record["id"],
+                    "label": "View Decision",
+                },
+            )
+
+        return record
+
+    def attach_document(self, level: str, doc_data: DocumentAttachmentInput, user_id: str = "student_profile") -> dict[str, Any]:
+        """Attach a supporting transcript, marksheet, or certificate to an academic milestone."""
+        canonical_key = normalize_level_key(level)
+        with self._lock:
+            record = self._records.get(canonical_key)
+            if not record:
+                raise ValueError(f"Record for '{level}' not found.")
+
+            now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            doc_id = doc_data.document_id or f"doc_{canonical_key}_{int(time.time())}"
+            doc_entry = {
+                "id": doc_id,
+                "name": doc_data.name,
+                "checksum": doc_data.checksum or f"sha256_{uuid.uuid4().hex[:12]}",
+                "file_type": doc_data.file_type or "transcript",
+                "attached_at": now_iso,
+                "attached_by": user_id,
+            }
+
+            if "supporting_documents" not in record or not isinstance(record["supporting_documents"], list):
+                record["supporting_documents"] = []
+            record["supporting_documents"].append(doc_entry)
+            record["updated_at"] = now_iso
+            record["version"] = record.get("version", 1) + 1
+
+            self._save_storage()
+
+        self._sync_record_to_graph(record)
+
+        if self.notification_mgr:
+            self.notification_mgr.create_notification(
+                title=f"Supporting Document Attached: {record['qualification']}",
+                message=f"Attached evidence document '{doc_data.name}' ({doc_data.file_type}) to {record['qualification']} record.",
+                category="VERIFICATION",
+                severity="INFO",
+                user_id=user_id,
+                related_record={
+                    "id": record["id"],
+                    "type": "academic_record",
+                    "level": record["qualification"],
+                    "document_id": doc_id,
+                },
+                action={
+                    "target_tab": "personal-intelligence",
+                    "record_id": record["id"],
+                    "label": "View Evidence",
+                },
+            )
+
+        return record
+
+    def get_verification_statuses(self, user_id: Optional[str] = None) -> list[dict[str, Any]]:
+        """Return verification status records across all supported milestones."""
+        statuses = []
+        with self._lock:
+            for key, info in SUPPORTED_LEVELS.items():
+                record = self._records.get(key)
+                if record:
+                    statuses.append({
+                        "level_key": key,
+                        "qualification": record.get("qualification", info["canonical_name"]),
+                        "institution": record.get("institution", ""),
+                        "passing_year": record.get("passing_year"),
+                        "verification_status": record.get("verification_status", VerificationStatus.PENDING.value),
+                        "verification_method": record.get("verification_method", "MANUAL_REVIEW_REQUIRED"),
+                        "verification_source": record.get("verification_source", "User Submission (Self-Attested)"),
+                        "verification_timestamp": record.get("verification_timestamp"),
+                        "verification_reason": record.get("verification_reason", ""),
+                        "supporting_documents_count": len(record.get("supporting_documents", [])),
+                        "supporting_documents": record.get("supporting_documents", []),
+                        "is_recorded": True,
+                        "verified": record.get("verified", False),
+                    })
+                else:
+                    statuses.append({
+                        "level_key": key,
+                        "qualification": info["canonical_name"],
+                        "institution": "Not Recorded",
+                        "passing_year": None,
+                        "verification_status": "Not Recorded",
+                        "verification_method": "N/A",
+                        "verification_source": "N/A",
+                        "verification_timestamp": None,
+                        "verification_reason": "No candidate record submitted for this stage.",
+                        "supporting_documents_count": 0,
+                        "supporting_documents": [],
+                        "is_recorded": False,
+                        "verified": False,
+                    })
+        return statuses
 
     def delete_record(self, level_or_id: str) -> bool:
         """Remove an academic record and delete corresponding graph nodes."""
@@ -419,6 +723,13 @@ class PersonalIntelligenceManager:
                     "normalized_percentage": equiv_pct,
                     "years_since_previous": years_since_prev,
                     "record_type": "ACTUAL_RECORD",
+                    "verified": rec_copy.get("verified", False),
+                    "verification_status": rec_copy.get("verification_status", VerificationStatus.PENDING.value),
+                    "verification_method": rec_copy.get("verification_method", "MANUAL_REVIEW_REQUIRED"),
+                    "verification_source": rec_copy.get("verification_source", "User Submission (Self-Attested)"),
+                    "verification_timestamp": rec_copy.get("verification_timestamp"),
+                    "verification_reason": rec_copy.get("verification_reason", ""),
+                    "supporting_documents": rec_copy.get("supporting_documents", []),
                     "roll_or_registration_number": rec_copy.get("roll_or_registration_number", ""),
                     "recorded_at": rec_copy.get("recorded_at"),
                     "notes": rec_copy.get("notes", ""),
@@ -453,6 +764,8 @@ class PersonalIntelligenceManager:
                     "total_milestones_possible": len(SUPPORTED_LEVELS),
                     "recorded_milestones_count": len(timeline),
                     "missing_milestones_count": len(missing_milestones),
+                    "verified_count": len([r for r in available_records if r.get("verified") or r.get("verification_status") == VerificationStatus.VERIFIED.value]),
+                    "pending_verification_count": len([r for r in available_records if r.get("verification_status") in (VerificationStatus.PENDING.value, VerificationStatus.IN_PROGRESS.value)]),
                     "is_complete": len(missing_milestones) == 0,
                     "privacy_mode_active": mask_sensitive,
                 },
